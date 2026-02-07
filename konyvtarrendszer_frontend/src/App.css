@@ -1,6 +1,5 @@
 .App {
   text-align: center;
-  background-color: beige;
 }
 
 .App-header {
@@ -14,6 +13,17 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+input {
+  background-color: #61dafb;
 }
+
+label{
+  padding: 15px;
+}
+
+button{
+  border-radius: 20%;
+  padding: 15px;
+  font-size: medium;
+}
+
