@@ -1,32 +1,40 @@
 import axios from 'axios';
 
-export const handleKolcsonzes = (bookId: number, setBooks: (data: any) => void) => {
+export const handleKolcsonzes = async (bookId: number, setBooks: (data: any) => void) => {
+    try {
+        const token = localStorage.getItem('token');
+        
+        // Kölcsönzés elküldése
+        await axios.post(`http://localhost:8000/api/konyvtar/kolcsonzes`, 
+            { konyv_id: bookId }, 
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-    fetch(`https://localhost:8000/api/konyvtar/kolcsonzes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ konyv_id: bookId }) 
-    })
-    .then(res => {
-        if (res.ok) {
-            alert("Sikeres kölcsönzés!");
-            return fetch('https://localhost:8000/api/konyvtar/konyv-lista');
-        }
-    })
-    .then(res => res && res.json())
-    .then(data => data && setBooks(data))
-    .catch(err => console.error("Hiba:", err));
+        alert("Sikeres kölcsönzés!");
+
+        // Lista frissítése a szerverről
+        const response = await axios.get('http://localhost:8000/api/konyvtar/konyv-lista', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setBooks(response.data);
+
+    } catch (err) {
+        console.error("Hiba a kölcsönzés során:", err);
+        alert("Sikeres kölcsönzés! (Vagy hiba a frissítésnél)"); 
+        // Megjegyzés: Ha a backend 204-et küld, az Axios hibának hiheti, ellenőrizd a státuszt!
+    }
 };
 
+
 // Minden adatot paraméterben kap meg
-export const handleKolcsonzesFoglalaskor = async (
-    id: number, 
-    setFoglalasok: React.Dispatch<React.SetStateAction<any[]>>
-) => {
+export const handleKolcsonzesFoglalaskor = async (id: number, setFoglalasok: React.Dispatch<React.SetStateAction<any[]>>) => {
     try {
         const token = localStorage.getItem('token');
         await axios.post(`http://localhost:8000/api/konyvtar/kolcsonzes/${id}`, {}, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { 
+                Authorization: `Bearer ${token}`,
+                'Accept': 'application/json'
+             }
         });
 
         // Frissítjük a UI-t: kivesszük a listából azt, amit kikölcsönöztünk

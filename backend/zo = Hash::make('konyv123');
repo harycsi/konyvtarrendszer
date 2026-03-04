@@ -1,0 +1,11 @@
+[90m= [39m[34;4mApp\Models\Dolgozo[39;24m {#5780
+    [34mid[39m: [35m1[39m,
+    [34mnev[39m: "[32mKovács Mária[39m",
+    [34muser_nev[39m: "[32mkonyvtar1[39m",
+    [34mjelszo[39m: "[32mkonyv123[39m",
+    [34mtelefonszam[39m: "[32m06203123456[39m",
+    [34mrole[39m: [35m1[39m,
+    [34mcreated_at[39m: [36mnull[39m,
+    [34mupdated_at[39m: [36mnull[39m,
+  }
+
