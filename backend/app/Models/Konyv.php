@@ -20,5 +20,6 @@ class Konyv extends Model
         'db_szam',
         'kep',
         'osszdb_szam',
+        'leiras'
     ];
 }
