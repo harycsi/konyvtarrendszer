@@ -22,29 +22,19 @@ class KonyvController extends Controller
 
     public function keres(Request $request) 
     {
-        $query = Konyv::query();
+        $searchTerm = $request->query('query');
+        $sortBy = $request->query('sort', 'cim');
 
-        $query->when($request->filled('szerzo'), function ($query) use ($request) {
-        $query->where('szerzo', 'LIKE', '%' . $request->query('szerzo') . '%');
-        });
+        $eredmenyek = Konyv::query()
+            ->when($searchTerm, function ($query) use ($searchTerm) {
+                $query->where('cim', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('szerzo', 'LIKE', "%{$searchTerm}%");
+            })
+            ->orderBy($sortBy, 'asc')
+            ->limit(50)
+            ->get();
 
-        $query->when($request->filled('cim'), function ($query) use ($request) {
-        $query->where('cim', 'LIKE', '%' . $request->query('cim') . '%');
-        });
-
-        $eredmenyek = $query->limit(50)->get();
-
-        $formazottEredmenyek = $eredmenyek->map(function ($konyv) {
-        return [
-            'id' => $konyv->id,
-            'cim' => $konyv->cim,
-            'szerzo' => $konyv->szerzo,
-            'db_szam' => $konyv->db_szam,
-            'kep_url' => asset('storage' . $konyv->kep) 
-            ];
-        });
-
-        return response()->json(['data' => $formazottEredmenyek,], 200);
+        return response()->json($eredmenyek);
     }
 
     public function show(string $id)

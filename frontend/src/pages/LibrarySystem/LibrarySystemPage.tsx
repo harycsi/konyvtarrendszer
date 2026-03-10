@@ -1,8 +1,8 @@
-import { useState, useMemo, createContext, useContext, useEffect } from 'react';
-import '../App.css';
+import { useState, createContext, useContext, useEffect } from 'react';
+import '../../App.css';
 import { NavLink } from 'react-router-dom';
-import { Logout } from './LogoutPages';
-import { handleKolcsonzes } from '../ApiActions';
+import { Logout } from '../Auth/LogoutPage';
+import { handleKolcsonzes } from '../../ApiActions';
 import axios from 'axios';
 
 interface Book {
@@ -21,7 +21,7 @@ interface LibraryContextType {
     setSortBy: (val: string) => void;
     books: Book[];
     setBooks: React.Dispatch<React.SetStateAction<Book[]>>;
-    filteredBooks: Book[];
+    handleSearch: (term: string) => void;
 }
 
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
@@ -33,29 +33,30 @@ const [sortBy, setSortBy] = useState("cim");
 const [books, setBooks] = useState<Book[]>([]); 
 
 useEffect(() => {
-    axios.get('http://localhost:8000/api/konyvtar/konyv-lista', {
-        headers: { 
-            'Accept': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+    const token = localStorage.getItem('token');
+    const config = {
+        headers: { 'Accept': 'application/json', Authorization: `Bearer ${token}` }
+    };
+
+    // Vár 300ms-ot, mielőtt elküldi a kérést
+    const delayDebounceFn = setTimeout(() => {
+        if (searchTerm.length > 2) {
+            axios.get(`http://localhost:8000/api/konyvtar/keres?query=${searchTerm}`, config)
+                .then(res => setBooks(res.data))
+                .catch(err => console.error("Keresési hiba:", err));
+        } else if (searchTerm.length === 0) {
+            axios.get('http://localhost:8000/api/konyvtar/konyv-lista', config)
+                .then(res => setBooks(res.data))
+                .catch(err => console.error("Hiba:", err));
         }
-    })
-    .then(res => setBooks(res.data))
-    .catch(err => console.error("Hiba a letöltéskor:", err));
-}, []);
+    }, 300);
 
-const filteredBooks = useMemo<Book[]>(() => {
-const lowerSearchTerm = searchTerm.toLowerCase();
+    return () => clearTimeout(delayDebounceFn); // Kitakarítja az időzítőt, ha a user tovább gépel
+}, [searchTerm]); // Ez a hook minden searchTerm változáskor lefut
 
-  return books
-            .filter((book: Book) => 
-            book.cim.toLowerCase().includes(lowerSearchTerm) || 
-            book.szerzo.toLowerCase().includes(lowerSearchTerm))
-            .sort((a: Book, b: Book) => {
-              if (sortBy === 'cim') return a.cim.localeCompare(b.cim);
-              if (sortBy === 'szerzo') return a.szerzo.localeCompare(b.szerzo);
-              return 0;
-            });
-}, [searchTerm, books, sortBy]);
+const handleSearch = (term: string) => {
+    setSearchTerm(term);
+};
 
 const contextValue: LibraryContextType = {
     books,
@@ -64,7 +65,7 @@ const contextValue: LibraryContextType = {
     setBooks,
     setSearchTerm,
     setSortBy,
-    filteredBooks,
+    handleSearch,
 };
 
 return <>
@@ -99,8 +100,8 @@ return <>
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredBooks.length > 0 ? (
-                        filteredBooks.map((book) => (
+                    {books.length > 0 ? (
+                        books.map((book) => (
                             <tr key={book.id}>
                                 <td>{book.id}</td>
                                 <td>{book.cim}</td>
@@ -116,7 +117,7 @@ return <>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={6}>Betöltés vagy üres lista...</td>
+                            <td colSpan={7}>Betöltés vagy üres lista...</td>
                         </tr>
                     )}
                 </tbody>
@@ -132,21 +133,23 @@ const useLibrary = () => {
 
   if (!context) throw Error("Nincs Provider átadva a komponensnek!");
 
-  const { searchTerm, books, sortBy, setBooks, filteredBooks, setSearchTerm } = context;
-  return { searchTerm, books, sortBy, setBooks, filteredBooks, setSearchTerm };
+  const { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm } = context;
+  return { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm };
 }
 
 export const SearchBar = () => {
-  const { searchTerm, setSearchTerm } = useLibrary();
+  const { searchTerm, handleSearch } = useLibrary();
 
-  return <form>
-    <label>Keresés (cím vagy szerző):
-        <input 
-          type="text" 
-          value={searchTerm}  
-          onChange={(e) => setSearchTerm(e.target.value)} 
-        />      
-        {searchTerm}
-      </label>
-  </form>
+  return (
+    <form onSubmit={(e) => e.preventDefault()}>
+        <label>Keresés:
+            <input 
+            type="text" 
+            value={searchTerm}  
+            onChange={(e) => handleSearch(e.target.value)} 
+            placeholder="Cím vagy szerző..."
+            />      
+        </label>
+    </form>
+  );
 }

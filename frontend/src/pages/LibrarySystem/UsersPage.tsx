@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useState, useMemo, createContext, useContext, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Logout } from './LogoutPages';
-import '../App.css';
+import { Logout } from '../Auth/LogoutPage';
+import '../../App.css';
 
 interface Users {
     id: number;
@@ -111,7 +111,7 @@ const UsersSearchBar = () => {
     
     return (
         <form onSubmit={(e) => e.preventDefault()}>
-            <label>Keresés név/felhasználó név szerint:
+            <label>Keresés (név szerint):
                 <input 
                     type="text" 
                     value={context.searchTerm}  

@@ -55,6 +55,15 @@ class KolcsonzesController extends Controller
         return Kolcsonzes::find($user_id);
     }
 
+    public function kolcson(Request $request) 
+    {
+        $userId = $request->user()->id;   
+        $adatok = \App\Models\Kolcsonzes::where('user_id', $userId)
+            ->with('konyv')
+            ->get();
+        return response()->json($adatok);
+    }
+
     /**
      * Update the specified resource in storage.
      *

@@ -55,6 +55,15 @@ class FoglalasController extends Controller
     {
         return Foglalas::find($user_id);
     }
+
+    public function foglal(Request $request) 
+    {
+        $userId = $request->user()->id;   
+        $adatok = \App\Models\Foglalas::where('user_id', $userId)
+            ->with('konyv')
+            ->get();
+        return response()->json($adatok);
+    }
     /**
      * Update the specified resource in storage.
      *
@@ -89,5 +98,19 @@ class FoglalasController extends Controller
         $konyv->refresh();
 
         return response()->json(null,200);
+    }
+
+    public function torol(Request $request, $id) 
+    {
+        $foglalas = \App\Models\Foglalas::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$foglalas) {
+            return response()->json(['message' => 'Foglalás nem található'], 404);
+        }
+
+        $foglalas->delete();
+        return response()->json(['message' => 'Sikeres törlés!']);
     }
 }

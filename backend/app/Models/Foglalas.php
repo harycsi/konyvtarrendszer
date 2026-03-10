@@ -9,9 +9,16 @@ class Foglalas extends Model
 {
     use HasFactory;
 
+    protected $table = 'foglalas'; 
+
     protected $fillable = [
         'user_id',
         'konyv_id',
         'fogl_datum',
     ];
+
+    public function konyv()
+    {
+        return $this->belongsTo(Konyv::class, 'konyv_id');
+    }
 }

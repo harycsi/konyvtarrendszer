@@ -11,6 +11,8 @@ class Kolcsonzes extends Model
     
     public $timestamps = false;
 
+    protected $table = 'kolcsonzes'; 
+
     protected $fillable = [
         'user_id',
         'konyv_id',
@@ -20,4 +22,9 @@ class Kolcsonzes extends Model
         'dolg_id',
         'uzenet',
     ];
+
+    public function konyv()
+    {
+        return $this->belongsTo(Konyv::class, 'konyv_id');
+    }
 }

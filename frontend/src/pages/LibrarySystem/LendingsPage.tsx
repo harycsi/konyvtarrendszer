@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { useState, useMemo, createContext, useContext, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Logout } from './LogoutPages';
-import '../App.css';
-import { handleKolcsonzes } from '../ApiActions';
+import { Logout } from '../Auth/LogoutPage';
+import '../../App.css';
+import { handleKolcsonzes } from '../../ApiActions';
 
 interface Kolcsonzes {
     id: number;
@@ -125,7 +125,7 @@ const KolcsonzesSearchBar = () => {
     
     return (
         <form onSubmit={(e) => e.preventDefault()}>
-            <label>Keresés (ID vagy dátum):
+            <label>Keresés (ID):
                 <input 
                     type="text" 
                     value={context.searchTerm}  

@@ -18,10 +18,10 @@ export const handleKolcsonzes = async (bookId: number, setBooks: (data: any) => 
         });
         setBooks(response.data);
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Hiba a kölcsönzés során:", err);
-        alert("Sikeres kölcsönzés! (Vagy hiba a frissítésnél)"); 
-        // Megjegyzés: Ha a backend 204-et küld, az Axios hibának hiheti, ellenőrizd a státuszt!
+        const message = err.response?.data?.message || "Hiba történt a kölcsönzés során!";
+        alert(message);
     }
 };
 
@@ -40,8 +40,9 @@ export const handleKolcsonzesFoglalaskor = async (id: number, setFoglalasok: Rea
         // Frissítjük a UI-t: kivesszük a listából azt, amit kikölcsönöztünk
         setFoglalasok(prev => prev.filter(f => f.id !== id));
         alert("Sikeres kölcsönzés!");
-    } catch (error) {
+    } catch (error: any) {
         console.error("Hiba a kölcsönzés során:", error);
-        alert("Hiba történt!");
+        const message = error.response?.data?.message || "Hiba történt a kölcsönzés során!";
+        alert(message);
     }
 };

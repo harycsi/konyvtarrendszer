@@ -1,7 +1,7 @@
-import { useState, useMemo, createContext, useContext, useEffect } from 'react';
-import '../App.css';
+import { useState, createContext, useContext, useEffect } from 'react';
+import '../../App.css';
 import { NavLink } from 'react-router-dom';
-import { UserLogout } from './LogoutPages';
+import { UserLogout } from '../Auth/LogoutPage';
 
 interface Book {
   id: number;
@@ -20,7 +20,6 @@ interface LibraryContextType {
     setSortBy: (val: string) => void;
     books: Book[];
     setBooks: React.Dispatch<React.SetStateAction<Book[]>>;
-    filteredBooks: Book[];
 }
 
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
@@ -31,26 +30,30 @@ const [searchTerm, setSearchTerm] = useState("");
 const [sortBy, setSortBy] = useState("cim");
 const [books, setBooks] = useState<Book[]>([]); 
 
-useEffect(() => {
-    fetch('http://localhost:8000/api/konyvtar/konyv-lista')
-        .then(res => res.json())
+ useEffect(() => {
+   const token = localStorage.getItem('token'); // A login-nál elmentett token
+      const delayDebounceFn = setTimeout(() => {
+      // URL meghatározása: ha van keresőkifejezés, a kereső végpontot hívjuk
+      const url = searchTerm.length > 2 
+        ? `http://localhost:8000/api/konyvtar/keres?query=${searchTerm}&sort=${sortBy}`
+        : `http://localhost:8000/api/konyvtar/konyv-lista?sort=${sortBy}`;
+
+      fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}` // Ez kulcsfontosságú!
+            }
+        })
+        .then(res => {
+            if (res.status === 401) throw new Error("Lejárt a munkamenet!");
+            return res.json();
+        })
         .then(data => setBooks(data))
-        .catch(err => console.error("Hiba a letöltéskor:", err));
-}, []);
+        .catch(err => console.error("Hiba:", err));
+    }, 300); // 300ms várakozás, hogy ne terheljük a szervert minden betűnél
 
-const filteredBooks = useMemo<Book[]>(() => {
-  const lowerSearchTerm = searchTerm.toLowerCase();
-
-  return books
-            .filter((book: Book) => 
-            book.cim.toLowerCase().includes(lowerSearchTerm) || 
-            book.szerzo.toLowerCase().includes(lowerSearchTerm))
-            .sort((a: Book, b: Book) => {
-              if (sortBy === 'cim') return a.cim.localeCompare(b.cim, 'hu');
-              if (sortBy === 'szerzo') return a.szerzo.localeCompare(b.szerzo, 'hu');
-              return 0;
-            });
-}, [searchTerm, books, sortBy]);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, sortBy]); // Újratölt, ha változik a keresőszó
 
 const contextValue: LibraryContextType = {
     books,
@@ -58,8 +61,7 @@ const contextValue: LibraryContextType = {
     sortBy,
     setBooks,
     setSearchTerm,
-    setSortBy,
-    filteredBooks
+    setSortBy
 };
 
 return <>
@@ -67,7 +69,7 @@ return <>
       <div className="library-container">
         <header>
         <div className="logo">Könyvtár</div>
-        <h3>Üdvözlünk könyvtárunkban!</h3>
+        <h4>Üdvözlünk könyvtárunkban!</h4>
         <nav>
             <ul>
             <li><NavLink to="/kolcsonzes">Kölcsönzéseim</NavLink></li>
@@ -80,13 +82,21 @@ return <>
         </header>
           <h3>Újdonságok</h3>
           <div className="konyvtar-ujdonsagok">
-          <img src={`http://localhost:8000/storage/kepek/kobalt.jpg`}></img>
-          <img src={`http://localhost:8000/storage/kepek/satantango.jpg`}></img>
-          <img src={`http://localhost:8000/storage/kepek/egmindenkekje.jpg`}></img>
+          <a href="https://alomgyar.hu/konyv/kobalt-a-pekingi-jatszma">
+          <img src={`http://localhost:8000/storage/kepek/kobalt.jpg`} alt='Kobalt'/></a>
+          <a href="https://magveto.hu/konyvek/satantango/139528461">
+          <img src={`http://localhost:8000/storage/kepek/satantango.jpg`} alt='Sátántangó'/></a>
+          <a href="https://europakiado.hu/konyv/regeny/szepirodalmi/melissa-da-costa/az-eg-minden-kekje">
+          <img src={`http://localhost:8000/storage/kepek/egmindenkekje.jpg`} alt='Az ég minden kékje'/></a>
+          <a href="https://21.szazadkiado.hu/szerintem-naray-tamas">
+          <img src={`http://localhost:8000/storage/kepek/szerintem.jpg`} alt='Szerintem'/></a>
+          <a href="https://gabo.hu/ujdonsag/3835-ken-follett-stonehenge-az-ido-katedralisa-9789635668748.html">
+          <img src={`http://localhost:8000/storage/kepek/stonehenge.jpg`} alt='Stonehenge'/></a>
           </div>
           <hr />
           <SearchBar />
           <BookList />
+          <footer>Az éves tagság december 31-ig érvényes!</footer>
       </div>
     </LibraryContext.Provider>
  </>
@@ -97,33 +107,42 @@ const useLibrary = () => {
 
   if (!context) throw Error("Nincs Provider átadva a komponensnek!");
 
-  const { searchTerm, books, setBooks, sortBy, filteredBooks, setSearchTerm } = context;
-  return { searchTerm, books, setBooks, sortBy, filteredBooks, setSearchTerm };
+  const { searchTerm, books, sortBy, setBooks, setSearchTerm, setSortBy } = context;
+  return { searchTerm, books, sortBy, setBooks, setSearchTerm, setSortBy };
 }
 
 const SearchBar = () => {
-  const { searchTerm, setSearchTerm } = useLibrary();
+  const { searchTerm, setSearchTerm, sortBy, setSortBy } = useLibrary();
 
-  return <form>
-    <label>Keresés (cím vagy szerző): 
+  return <form onSubmit={(e) => e.preventDefault()}>
+    <label>Keresés: 
         <input 
           type="text" 
           placeholder="Pl. Gárdonyi..."
           value={searchTerm}  
           onChange={(e) => setSearchTerm(e.target.value)} 
         />      
-        {searchTerm }
       </label>
+      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="cim">Cím szerint</option>
+            <option value="szerzo">Szerző szerint</option>
+        </select>
   </form>
 }
 
 const BookList = () => {
-  const { filteredBooks, setBooks } = useLibrary();
+  const { books, setBooks } = useLibrary();
 
   const handleFoglalas = (bookId: number, bookTitle: string) => {
-    fetch(`http://localhost:8000/api/foglalas`, {
+    const token = localStorage.getItem('token');
+
+    fetch(`http://localhost:8000/api/foglal`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ konyv_id: bookId }) // Most már létezik a bookId változó
     })
     .then(res => {
@@ -139,7 +158,7 @@ const BookList = () => {
 
   return (
     <div className="book-grid">
-      {filteredBooks.map((book: Book) => (
+      {books.map((book: Book) => (
         <div key={book.id} className="book-card">
           <img 
             src={`http://localhost:8000/storage/${book.kep}`}

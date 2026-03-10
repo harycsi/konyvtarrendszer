@@ -1,14 +1,17 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { UserLogin, UserRegister } from './pages/UserLoginPages';
-import { Login } from './pages/LoginPages';
-import { Library } from './pages/LibraryPages';
-import { LibrarySystem } from './pages/LibrarySystemPages';
-import { FoglalasLista } from './pages/ReservingsPages';
-import { UsersLista} from './pages/UsersPages';
+import { UserLogin, UserRegister } from './pages/Auth/UserLoginPage';
+import { Login } from './pages/Auth/LoginPage';
+import { Library } from './pages/Library/LibraryPage';
+import { LibrarySystem } from './pages/LibrarySystem/LibrarySystemPage';
+import { FoglalasLista } from './pages/LibrarySystem/ReservingsPage';
+import { UsersLista} from './pages/LibrarySystem/UsersPage';
+import { ProfilePage } from './pages/Library/UserProfilePage';
 import { useEffect } from 'react';
 import axios from 'axios';
-import KolcsonzesLista from './pages/LendingsPages';
+import { KolcsonzesLista } from './pages/LibrarySystem/LendingsPage';
+import { LentPage } from './pages/Library/UserLentPage';
+import { ReservedPage } from './pages/Library/UserReservedPage';
 axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.withCredentials = true; // Ez kell a Sanctumhoz
 
@@ -40,6 +43,9 @@ function App() {
         <Route path="/foglalasok" element={<FoglalasLista />} />
         <Route path="/kolcsonzesek" element={<KolcsonzesLista />} />
         <Route path="/kolcsonzok" element={<UsersLista />} />
+        <Route path="/profil" element={<ProfilePage />} />
+        <Route path="/kolcsonzes" element={<LentPage />} />
+        <Route path="/foglalas" element={<ReservedPage />} />
       </Routes>
     </BrowserRouter>
   );
