@@ -32,7 +32,8 @@ export const UsersLista = () => {
                 const response = await axios.get('http://localhost:8000/api/user', {
                     headers: { 
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        "Accept": "application/json" 
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
                 setUsers(response.data);
@@ -64,7 +65,7 @@ export const UsersLista = () => {
                             <li><NavLink to="/kolcsonzesek">Kölcsönzések</NavLink></li>
                             <li><NavLink to="/foglalasok">Foglalások</NavLink></li>
                             <li>
-                                <button type="button"  onClick={() => Logout()}className="nav-link-button">
+                                <button type="button" onClick={() => Logout('/')} className="nav-link-button">
                                     Kilépés
                                 </button>
                             </li>

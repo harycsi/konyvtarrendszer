@@ -3,17 +3,20 @@ import { useState, useMemo, createContext, useContext, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Logout } from '../Auth/LogoutPage';
 import '../../App.css';
-import { handleKolcsonzes } from '../../ApiActions';
+import { handleVisszavetel } from '../../ApiActions';
+import { useLibrary } from './LibrarySystemPage';
 
 interface Kolcsonzes {
     id: number;
     user_id: number;
     konyv_id: number;
     kolcs_datum: string;
-    vissza_datum: string;
-    email: boolean;
+    hatarido: string;
+    email: number;
     dolg_id: number;
-    uzenet: string;
+    uzenet: string | null;
+    user?: { name: string };
+    konyv?: { cim: string };
 }
 
 interface KolcsonzesContextType {
@@ -29,13 +32,16 @@ export const KolcsonzesLista = () => {
     const [kolcsonzesek, setKolcsonzesek] = useState<Kolcsonzes[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
 
+    const { fetchBooks } = useLibrary();
+
     useEffect(() => {
         const fetchKolcsonzesek = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/api/konyvtar/kolcsonzes-lista', {
-                    headers: { 
+                    headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        "Accept": "application/json" 
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
                 setKolcsonzesek(response.data);
@@ -48,12 +54,17 @@ export const KolcsonzesLista = () => {
 
     const filteredKolcsonzesek = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
-        return kolcsonzesek.filter(k => 
-            k.id.toString().includes(lowerSearch) || 
+        return kolcsonzesek.filter(k =>
+            k.id.toString().includes(lowerSearch) ||
             k.user_id.toString().includes(lowerSearch) ||
             k.kolcs_datum.includes(lowerSearch)
         );
     }, [searchTerm, kolcsonzesek]);
+
+    // Segédfüggvény a késés ellenőrzéséhez
+    const isOverdue = (dateStr: string) => {
+        return new Date(dateStr) < new Date();
+    };
 
     return (
         <KolcsonzesContext.Provider value={{ searchTerm, setSearchTerm, kolcsonzesek, setKolcsonzesek }}>
@@ -62,12 +73,12 @@ export const KolcsonzesLista = () => {
                     <div className="logo">Könyvtárrendszer</div>
                     <nav>
                         <ul>
-                            <li><NavLink to="/konyvtarrendszer">Könyvek</NavLink></li> 
+                            <li><NavLink to="/konyvtarrendszer">Könyvek</NavLink></li>
                             <li><NavLink to="/kolcsonzok">Kölcsönzők</NavLink></li>
                             <li><NavLink to="/kolcsonzesek">Kölcsönzések</NavLink></li>
                             <li><NavLink to="/foglalasok">Foglalások</NavLink></li>
                             <li>
-                                <button type="button"  onClick={() => Logout()}className="nav-link-button">
+                                <button type="button" onClick={() => Logout('/')} className="nav-link-button">
                                     Kilépés
                                 </button>
                             </li>
@@ -81,33 +92,34 @@ export const KolcsonzesLista = () => {
                     <table className="kolcsonzes-tablazat">
                         <thead>
                             <tr>
-                                <th>Kölcsönzés ID</th>
+                                <th>ID</th>
                                 <th>Felhasználó ID</th>
                                 <th>Könyv ID</th>
-                                <th>Kikölcsönözte</th>
-                                <th>Visszahozta</th>
-                                <th>Kapott e-mailt?</th>
-                                <th>Könyvtáros ID</th>
+                                <th>Kölcsönzés</th>
+                                <th>Határidő (14 nap)</th>
+                                <th>E-mail</th>
+                                <th>Könyvtáros</th>
                                 <th>Megjegyzés</th>
-                                <th>Vissza</th>
+                                <th>Művelet</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredKolcsonzesek.map((k) => (
-                                <tr key={k.id}>
+                                <tr key={k.id} className={isOverdue(k.hatarido) ? "overdue-row" : ""}>
                                     <td>{k.id}</td>
                                     <td>{k.user_id}</td>
                                     <td>{k.konyv_id}</td>
                                     <td>{new Date(k.kolcs_datum).toLocaleDateString('hu-HU')}</td>
-                                    <td>{k.vissza_datum ? new Date(k.vissza_datum).toLocaleDateString('hu-HU') 
-                                        : "Nincs visszahozva"}</td>
-                                    <td>{k.email ? "Igen" : "Nem"}</td>
+                                    <td className={isOverdue(k.hatarido) ? "overdue-date" : ""}>
+                                        {new Date(k.hatarido).toLocaleDateString('hu-HU')}
+                                    </td>
+                                    <td>{k.email === 1 ? "Igen" : "Nem"}</td>
                                     <td>{k.dolg_id}</td>
                                     <td>{k.uzenet || "-"}</td>
                                     <td>
-                                     <button onClick={() => {handleKolcsonzes(k.id, setKolcsonzesek);}}>
-                                        Visszavétel
-                                    </button>
+                                        <button onClick={() => { handleVisszavetel(k.id, setKolcsonzesek, fetchBooks); }}>
+                                            Visszavétel
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -122,15 +134,15 @@ export const KolcsonzesLista = () => {
 const KolcsonzesSearchBar = () => {
     const context = useContext(KolcsonzesContext);
     if (!context) return null;
-    
+
     return (
         <form onSubmit={(e) => e.preventDefault()}>
             <label>Keresés (ID):
-                <input 
-                    type="text" 
-                    value={context.searchTerm}  
-                    onChange={(e) => context.setSearchTerm(e.target.value)} 
-                />      
+                <input
+                    type="text"
+                    value={context.searchTerm}
+                    onChange={(e) => context.setSearchTerm(e.target.value)}
+                />
             </label>
         </form>
     );

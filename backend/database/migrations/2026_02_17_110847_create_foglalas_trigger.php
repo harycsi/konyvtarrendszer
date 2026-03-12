@@ -22,6 +22,17 @@ class CreateFoglalasTrigger extends Migration
                 WHERE konyv.id = NEW.konyv_id; 
             END
         ");
+
+        DB::unprepared("
+            CREATE TRIGGER `trg_foglalas_db_szam_torleskor`
+            AFTER DELETE ON `foglalas` 
+            FOR EACH ROW 
+            BEGIN 
+                    UPDATE konyv 
+                    SET db_szam = db_szam + 1 
+                    WHERE id = OLD.konyv_id;
+            END
+        ");
     }
 
     /**
@@ -32,5 +43,6 @@ class CreateFoglalasTrigger extends Migration
     public function down()
     {
         DB::unprepared("DROP TRIGGER IF EXISTS `trg_foglalas_db_szam_lefoglalta` ");
+         DB::unprepared("DROP TRIGGER IF EXISTS `trg_foglalas_db_szam_torleskor` ");
     }
 }

@@ -4,12 +4,15 @@ import { NavLink } from 'react-router-dom';
 import { Logout } from '../Auth/LogoutPage';
 import '../../App.css';
 import { handleKolcsonzesFoglalaskor } from '../../ApiActions';
+import { LibraryContext } from './LibrarySystemPage';
 
 interface Foglalas {
     id: number;
     user_id: number;
     konyv_id: number;
     fogl_datum: string;
+    user?: { name: string };
+    konyv?: { cim: string };
 }
 
 interface FoglalasContextType {
@@ -24,14 +27,18 @@ const FoglalasContext = createContext<FoglalasContextType | undefined>(undefined
 export const FoglalasLista = () => {
     const [foglalasok, setFoglalasok] = useState<Foglalas[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const context = useContext(LibraryContext);
 
     useEffect(() => {
         const fetchFoglalasok = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
             try {
                 const response = await axios.get('http://localhost:8000/api/konyvtar/foglalas-lista', {
-                    headers: { 
+                    headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        "Accept": "application/json" 
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
                 setFoglalasok(response.data);
@@ -44,12 +51,18 @@ export const FoglalasLista = () => {
 
     const filteredFoglalasok = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
-        return foglalasok.filter(f => 
-            f.id.toString().includes(lowerSearch) || 
+        return foglalasok.filter(f =>
+            f.id.toString().includes(lowerSearch) ||
             f.user_id.toString().includes(lowerSearch) ||
             f.fogl_datum.includes(lowerSearch)
         );
     }, [searchTerm, foglalasok]);
+
+    if (!context){
+        return <p>Betöltés (Context hiba)...</p>;
+    }
+
+    const { fetchBooks } = context;
 
     return (
         <FoglalasContext.Provider value={{ searchTerm, setSearchTerm, foglalasok, setFoglalasok }}>
@@ -58,12 +71,12 @@ export const FoglalasLista = () => {
                     <div className="logo">Könyvtárrendszer</div>
                     <nav>
                         <ul>
-                            <li><NavLink to="/konyvtarrendszer">Könyvek</NavLink></li> 
+                            <li><NavLink to="/konyvtarrendszer">Könyvek</NavLink></li>
                             <li><NavLink to="/kolcsonzok">Kölcsönzők</NavLink></li>
                             <li><NavLink to="/kolcsonzesek">Kölcsönzések</NavLink></li>
                             <li><NavLink to="/foglalasok">Foglalások</NavLink></li>
                             <li>
-                                <button type="button"  onClick={() => Logout()}className="nav-link-button">
+                                <button type="button" onClick={() => Logout('/')} className="nav-link-button">
                                     Kilépés
                                 </button>
                             </li>
@@ -77,7 +90,7 @@ export const FoglalasLista = () => {
                     <table className="foglalas-tablazat">
                         <thead>
                             <tr>
-                                <th>Foglalás ID</th>
+                                <th>ID</th>
                                 <th>Felhasználó ID</th>
                                 <th>Könyv ID</th>
                                 <th>Dátum</th>
@@ -92,10 +105,10 @@ export const FoglalasLista = () => {
                                     <td>{f.konyv_id}</td>
                                     <td>{new Date(f.fogl_datum).toLocaleDateString('hu-HU')}</td>
                                     <td>
-                                     <button onClick={() => {handleKolcsonzesFoglalaskor(f.id, setFoglalasok);}}>
-                                        Kölcsönzés
-                                    </button>
-                                </td>
+                                        <button onClick={() => handleKolcsonzesFoglalaskor(f, setFoglalasok, fetchBooks)}>
+                                            Kölcsönzés
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -110,15 +123,15 @@ export const FoglalasLista = () => {
 const FoglalasSearchBar = () => {
     const context = useContext(FoglalasContext);
     if (!context) return null;
-    
+
     return (
         <form onSubmit={(e) => e.preventDefault()}>
             <label>Keresés (ID):
-                <input 
-                    type="text" 
-                    value={context.searchTerm}  
-                    onChange={(e) => context.setSearchTerm(e.target.value)} 
-                />      
+                <input
+                    type="text"
+                    value={context.searchTerm}
+                    onChange={(e) => context.setSearchTerm(e.target.value)}
+                />
             </label>
         </form>
     );

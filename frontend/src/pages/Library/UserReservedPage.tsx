@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import '../../App.css';
 import { NavLink } from 'react-router-dom';
-import { UserLogout } from '../Auth/LogoutPage';
+import { Logout } from '../Auth/LogoutPage';
 
 interface Foglalas {
     id:number;
     user_id: number;
     konyv_id: number;
-     konyv?: Konyv; 
+    konyv?: Konyv; 
     fogl_datum: string;
 }
 
@@ -26,6 +26,7 @@ useEffect(() => {
         fetch(`http://localhost:8000/api/foglalas`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
         })
@@ -48,20 +49,31 @@ useEffect(() => {
     if (loading) return <div>Betöltés...</div>;
 
 const handleDelete = (id: number) => {
+    console.log("Törlendő ID:", id);
     if (!window.confirm("Biztosan törlöd a foglalást?")) return;
 
     const token = localStorage.getItem('token');
     fetch(`http://localhost:8000/api/foglalas/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest' 
+        }
     })
-    .then(res => {
+    .then(async res => {
         if (res.ok) {
             // Frissítjük a listát a képernyőn (kivesszük a töröltet)
             setFoglalasok(prev => prev.filter(f => f.id !== id));
+            alert("Sikeres törlés!");
+        }else{
+            const errorText = await res.text();
+            console.error("Szerver hiba:", res.status, errorText);
+            alert(`Hiba történt (${res.status}): Ellenőrizd a konzolt!`);
         }
     })
-    .catch(err => console.error(err));
+    //.catch(err => console.error(err));
 };
 
     return (
@@ -75,7 +87,7 @@ const handleDelete = (id: number) => {
             <li><NavLink to="/kolcsonzes">Kölcsönzéseim</NavLink></li>
             <li><NavLink to="/foglalas">Foglalásaim</NavLink></li>
             <li><NavLink to="/profil">Profilom</NavLink></li>
-            <li><button type="button" onClick={UserLogout} className="nav-link-button">
+            <li><button type="button" onClick={() => Logout('/belepes')} className="nav-link-button">
                 Kilépés</button></li>
             </ul>
         </nav>
@@ -92,7 +104,7 @@ const handleDelete = (id: number) => {
           </div>
           ))
           ) : (
-                <p>Nincs aktív foglalásaid!</p>                  
+                <p>Nincs aktív foglalásod!</p>                  
             )}
           <footer>Az éves tagság december 31-ig érvényes!</footer>
       </div>    

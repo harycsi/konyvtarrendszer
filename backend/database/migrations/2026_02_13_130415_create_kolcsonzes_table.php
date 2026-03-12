@@ -17,8 +17,8 @@ class CreateKolcsonzesTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('konyv_id')->constrained('konyv');
-            $table->date('kolcs_datum');
-            $table->date('vissza_datum')->nullable();
+            $table->date('kolcs_datum')->useCurrent();
+            $table->date('hatarido')->nullable();
             $table->tinyInteger('email')->default(0);
             $table->foreignId('dolg_id')->constrained('dolgozos');
             $table->string('uzenet')->nullable();

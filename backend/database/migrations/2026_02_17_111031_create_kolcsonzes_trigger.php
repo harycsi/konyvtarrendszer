@@ -24,27 +24,14 @@ class CreateKolcsonzesTrigger extends Migration
         ");
 
         DB::unprepared("
-            CREATE TRIGGER `trg_kolcsonzes_db_szam_visszahozatal`
-            AFTER UPDATE ON `kolcsonzes` 
-            FOR EACH ROW 
-            BEGIN 
-                UPDATE konyv
-                SET konyv.db_szam = konyv.db_szam + 1 
-                WHERE new.vissza_datum IS NOT NULL;
-            END
+        CREATE TRIGGER `trg_kolcsonzes_db_szam_visszavetel`
+        AFTER DELETE ON `kolcsonzes` 
+        FOR EACH ROW 
+        BEGIN 
+            UPDATE konyv SET db_szam = db_szam + 1 WHERE id = OLD.konyv_id;
+        END
         ");
 
-        DB::unprepared("
-            CREATE TRIGGER `trg_kolcsonzes_vissza_datum_before_update`
-            BEFORE UPDATE ON `kolcsonzes` 
-            FOR EACH ROW 
-            BEGIN 
-                if new.kolcs_datum > new.vissza_datum THEN
-	                signal SQLSTATE '45000' set MESSAGE_TEXT='Hiba: A kölcsönzés 
-                    dátuma előbbi dátum kell legyen, mint a visszahozatal dátuma!';
-                end if;
-            END
-        ");
     }
 
     /**
@@ -55,7 +42,6 @@ class CreateKolcsonzesTrigger extends Migration
     public function down()
     {
         DB::unprepared("DROP TRIGGER IF EXISTS `trg_kolcsonzes_db_szam_kikolcsonzes` ");
-        DB::unprepared("DROP TRIGGER IF EXISTS `trg_kolcsonzes_db_szam_visszahozatal` ");
-        DB::unprepared("DROP TRIGGER IF EXISTS `trg_kolcsonzes_vissza_datum_before_update` ");
+        DB::unprepared("DROP TRIGGER IF EXISTS `trg_kolcsonzes_db_szam_visszavetel` ");
     }
 }

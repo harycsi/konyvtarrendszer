@@ -13,7 +13,7 @@ class UserController extends Controller
      */
 
     public function login(Request $request)
-    {   
+    {
         $fields = $request->validate([
             'user_nev' => 'required|string',
             'jelszo' => 'required|string'
@@ -50,13 +50,13 @@ class UserController extends Controller
         }
 
         $talalatok = User::where('nev', 'LIKE', '%' . $nev . '%')->get();
-        return response()->json($talalatok, 200);      
+        return response()->json($talalatok, 200);
     }
 
     public function show(string $id)
     {
         return User::find($id);
-    } 
+    }
 
     public function store(Request $request)
     {
@@ -75,9 +75,9 @@ class UserController extends Controller
         $user->email_cim = $request->email_cim;
         $user->lakcim = $request->lakcim;
         $user->telefonszam = $request->telefonszam;
-    
+
         //Titkosítjuk a jelszót, mielőtt elmentjük!
-        $user->jelszo = Hash::make($request->jelszo); 
+        $user->jelszo = Hash::make($request->jelszo);
 
         $user->save();
 
@@ -96,7 +96,7 @@ class UserController extends Controller
         $adatok = $request->all();
 
         if ($request->has('jelszo')) {
-        $adatok['jelszo'] = Hash::make($request->jelszo);
+            $adatok['jelszo'] = Hash::make($request->jelszo);
         }
 
         $user->update($adatok);
@@ -110,17 +110,19 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $user->delete();
-        return response()->json(['message' => 'Felhasználó törölve'] ,200);
+        return response()->json(['message' => 'Felhasználó törölve'], 200);
     }
 
     public function profil(Request $request)
     {
-    return response()->json($request->user());
+        return response()->json($request->user());
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return response(['message' => 'Sikeres kijelentkezés!'], 200);
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+        return response()->json(['message' => 'Sikeres kijelentkezés!'], 200);
     }
 }

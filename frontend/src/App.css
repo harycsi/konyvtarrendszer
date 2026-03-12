@@ -1,4 +1,4 @@
-.App{
+.App {
   text-align: center;
 }
 
@@ -94,20 +94,20 @@ header {
   padding: 15px 30px;
   border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 footer {
   margin-top: auto;
   display: flex;
   justify-content: center;
-  align-items: center;     
+  align-items: center;
   background-color: #2c3e50;
   color: white;
   padding: 15px 30px;
   border-radius: 8px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -116,7 +116,7 @@ footer {
   letter-spacing: 1px;
 }
 
-h4{
+h4 {
   color: whitesmoke;
 }
 
@@ -147,14 +147,22 @@ nav a.active {
 }
 
 .nav-link-button {
-  background: none;      /* Háttér eltüntetése */
-  border: none;          /* Keret eltüntetése */
-  padding: 0;            /* Belső margó nullázása */
-  color: #bdc3c7;       /* Olyan kék legyen, mint a többi link (írd át a sajátodra!) */
-  text-decoration: none; /* Aláhúzás levétele */
-  font-size: inherit;    /* Betűméret öröklése a szülőtől */
-  font-family: inherit;  /* Betűtípus öröklése */
-  cursor: pointer;       /* Mutassa az ujjat rámutatáskor */
+  background: none;
+  /* Háttér eltüntetése */
+  border: none;
+  /* Keret eltüntetése */
+  padding: 0;
+  /* Belső margó nullázása */
+  color: #bdc3c7;
+  /* Olyan kék legyen, mint a többi link (írd át a sajátodra!) */
+  text-decoration: none;
+  /* Aláhúzás levétele */
+  font-size: inherit;
+  /* Betűméret öröklése a szülőtől */
+  font-family: inherit;
+  /* Betűtípus öröklése */
+  cursor: pointer;
+  /* Mutassa az ujjat rámutatáskor */
 }
 
 input {
@@ -186,14 +194,15 @@ hr {
   border-radius: 10px;
   padding: 15px;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 1px solid #eee;
 }
 
 .book-card:hover {
-  transform: translateY(-5px); /* Megemelkedik hoverre */
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: translateY(-5px);
+  /* Megemelkedik hoverre */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .book-card img {
@@ -209,27 +218,36 @@ hr {
 }
 
 .konyvtar-ujdonsagok {
-  display: flex;       /* Egymás mellé teszi az elemeket */
-  gap: 20px;          /* Távolság a könyvek között */
-  align-items: end;    /* Ha eltérő a magasságuk, az aljukat igazítja egy vonalba */
-  flex-wrap: wrap;     /* Mobilnézetben, ha nem férnek el, egymás alá törnek */
+  display: flex;
+  /* Egymás mellé teszi az elemeket */
+  gap: 20px;
+  /* Távolság a könyvek között */
+  align-items: end;
+  /* Ha eltérő a magasságuk, az aljukat igazítja egy vonalba */
+  flex-wrap: wrap;
+  /* Mobilnézetben, ha nem férnek el, egymás alá törnek */
 }
 
 .konyvtar-ujdonsagok img {
   /* Itt állítsd be a kívánt fix méretet */
-  width: 160px; 
+  width: 160px;
   height: 240px;
-  object-fit: cover;     /* Kitölti a keretet torzítás nélkül */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Árnyék a mélységért */
-  transition: transform 0.2s; /* Animáció a kurzorhoz */
+  object-fit: cover;
+  /* Kitölti a keretet torzítás nélkül */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* Árnyék a mélységért */
+  transition: transform 0.2s;
+  /* Animáció a kurzorhoz */
 }
 
 .konyv-link {
-  text-decoration: none; /* Eltünteti a link aláhúzását */
+  text-decoration: none;
+  /* Eltünteti a link aláhúzását */
 }
 
 .konyvtar-ujdonsagok img:hover {
-  transform: scale(1.05); /* Kicsit megnő, ha rávisszük az egeret */
+  transform: scale(1.05);
+  /* Kicsit megnő, ha rávisszük az egeret */
 }
 
 /* Táblázat konténer */
@@ -239,7 +257,8 @@ hr {
 .kolcsonzes-lista-container {
   margin: 20px 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: auto; /* Mobilon görgethetővé teszi, ha túl széles */
+  overflow-x: auto;
+  /* Mobilon görgethetővé teszi, ha túl széles */
 }
 
 /* Alap táblázat stílus */
@@ -265,7 +284,7 @@ hr {
   text-align: left;
 }
 
-.konyv-tablazat th, 
+.konyv-tablazat th,
 .konyv-tablazat td,
 .foglalas-tablazat th,
 .foglalas-tablazat td,
@@ -342,7 +361,7 @@ hr {
   background-color: #2980b9;
 }
 
-.kolcsonzes-gomb, 
+.kolcsonzes-gomb,
 .foglalas-gomb {
   padding: 5px 10px;
   font-size: 0.85rem;
@@ -350,6 +369,103 @@ hr {
 
 .kolcsonzes-gomb:disabled,
 .foglalas-gomb:disabled {
-  background-color: #bdc3c7; /* Szürke, ha nem elérhető */
+  background-color: #bdc3c7;
+  /* Szürke, ha nem elérhető */
   cursor: not-allowed;
+}
+
+.sort-button-group {
+  display: inline-flex;
+  background-color: #f3f4f6;
+  /* Világosszürke háttér */
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.sort-button-group button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sort-button-group button:hover {
+  color: #1f2937;
+  background-color: #e5e7eb;
+}
+
+/* Az aktív gomb stílusa */
+.sort-button-group button.active {
+  background-color: #ffffff;
+  color: #2563eb;
+  /* Szép kék szín */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  color: #333;
+
+  /* Ezek a fontos sorok: */
+  max-height: 85vh;
+  /* A képernyő magasságának max 85%-a lehet */
+  overflow-y: auto;
+  /* Ha hosszabb a tartalom, megjelenik a belső görgetősáv */
+}
+
+/* Opcionális: a leírás szövegének formázása */
+.description {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  /* Megtartja a sortöréseket, ha vannak a szövegben */
+  margin-top: 15px;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Késedelmes sorok kiemelése */
+.overdue-row {
+    background-color: #fff5f5; /* Nagyon halvány piros háttér */
+}
+
+.overdue-date {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+.warning-icon {
+    font-size: 1.2rem;
+    vertical-align: middle;
 }

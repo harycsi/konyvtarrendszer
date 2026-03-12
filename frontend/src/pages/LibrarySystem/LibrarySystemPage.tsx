@@ -22,54 +22,70 @@ interface LibraryContextType {
     books: Book[];
     setBooks: React.Dispatch<React.SetStateAction<Book[]>>;
     handleSearch: (term: string) => void;
+    fetchBooks: () => void; 
 }
 
-const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
+export const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
+
+export const LibraryProvider = ({ children }: { children: React.ReactNode }) => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState("cim");
+    const [books, setBooks] = useState<Book[]>([]);
+
+    const fetchBooks = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return; // Ha nincs token, meg se próbálja
+
+    try {
+        const res = await axios.get('http://localhost:8000/api/konyvtar/konyv-lista', {
+            headers: { 
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        setBooks(res.data);
+    }catch (err: any) {
+        if (err.response?.status === 401) {
+            console.warn("Lejárt vagy hiányzó token.");
+            // Opcionális: Logout(); // Ha érvénytelen a token, léptesse ki
+        }
+    }
+};
+
+    // A keresési useEffect-et ide hozzuk át, hogy globálisan működjön
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const config = { headers: { 
+            Authorization: `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json' 
+        }};
+        
+        const delayDebounceFn = setTimeout(() => {
+            if (searchTerm.length > 2) {
+                axios.get(`http://localhost:8000/api/konyvtar/keres?query=${searchTerm}`, config)
+                    .then(res => setBooks(res.data));
+            } else if (searchTerm.length === 0) {
+                fetchBooks();
+            }
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    const contextValue = { books, searchTerm, sortBy, setBooks, setSearchTerm, setSortBy, handleSearch: setSearchTerm, fetchBooks };
+
+    return (
+        <LibraryContext.Provider value={contextValue}>
+            {children}
+        </LibraryContext.Provider>
+    );
+};
 
 export const LibrarySystem = () => {
+    const { books, setBooks, searchTerm, fetchBooks } = useLibrary();
 
-const [searchTerm, setSearchTerm] = useState("");
-const [sortBy, setSortBy] = useState("cim");
-const [books, setBooks] = useState<Book[]>([]); 
-
-useEffect(() => {
-    const token = localStorage.getItem('token');
-    const config = {
-        headers: { 'Accept': 'application/json', Authorization: `Bearer ${token}` }
-    };
-
-    // Vár 300ms-ot, mielőtt elküldi a kérést
-    const delayDebounceFn = setTimeout(() => {
-        if (searchTerm.length > 2) {
-            axios.get(`http://localhost:8000/api/konyvtar/keres?query=${searchTerm}`, config)
-                .then(res => setBooks(res.data))
-                .catch(err => console.error("Keresési hiba:", err));
-        } else if (searchTerm.length === 0) {
-            axios.get('http://localhost:8000/api/konyvtar/konyv-lista', config)
-                .then(res => setBooks(res.data))
-                .catch(err => console.error("Hiba:", err));
-        }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn); // Kitakarítja az időzítőt, ha a user tovább gépel
-}, [searchTerm]); // Ez a hook minden searchTerm változáskor lefut
-
-const handleSearch = (term: string) => {
-    setSearchTerm(term);
-};
-
-const contextValue: LibraryContextType = {
-    books,
-    searchTerm,
-    sortBy,
-    setBooks,
-    setSearchTerm,
-    setSortBy,
-    handleSearch,
-};
-
-return <>
-     <LibraryContext.Provider value={contextValue}>
+return (
           <div className="library-container">
             <header>
             <div className="logo">Könyvtárrendszer</div>
@@ -78,7 +94,7 @@ return <>
                 <li><NavLink to="/kolcsonzok">Kölcsönzők</NavLink></li>
                 <li><NavLink to="/kolcsonzesek">Kölcsönzések</NavLink></li>
                 <li><NavLink to="/foglalasok">Foglalások</NavLink></li>
-                <li><button type="button" onClick={Logout} className="nav-link-button">
+                <li><button type="button" onClick={() => Logout('/')} className="nav-link-button">
                     Kilépés</button></li>
                 </ul>
             </nav>
@@ -110,8 +126,18 @@ return <>
                                 <td>{book.oldalak}</td>
                                 <td>{book.db_szam} db</td>
                                 <td>
-                                    <button className="kolcsonzes-gomb" disabled={book.db_szam === 0} onClick={() => handleKolcsonzes(book.id, setBooks)}
-                                        > {book.db_szam > 0 ? "Kölcsönzés" : "Elfogyott"}</button>
+                                    <button 
+    className="kolcsonzes-gomb" 
+    disabled={book.db_szam === 0} 
+    onClick={() => {
+        const userId = window.prompt("Kérjük a kölcsönző ID-ját:");
+        if (userId) {
+            handleKolcsonzes(book.id, Number(userId), setBooks);
+        }
+    }}
+> 
+    {book.db_szam > 0 ? "Kölcsönzés" : "Elfogyott"}
+</button>
                                 </td>
                             </tr>
                         ))
@@ -124,17 +150,16 @@ return <>
             </table>
             </div>
     </div>
-    </LibraryContext.Provider>
-</>
-}
+    );
+};
 
-const useLibrary = () => {
+export const useLibrary = () => {
   const context = useContext(LibraryContext);
 
   if (!context) throw Error("Nincs Provider átadva a komponensnek!");
 
-  const { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm } = context;
-  return { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm };
+  const { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm, fetchBooks} = context;
+  return { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm, fetchBooks };
 }
 
 export const SearchBar = () => {

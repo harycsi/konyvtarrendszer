@@ -15,7 +15,11 @@ class FoglalasController extends Controller
      */
     public function index()
     {
-        return Foglalas::all();
+        try {
+            return Foglalas::all();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -25,26 +29,27 @@ class FoglalasController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    
     public function store(Request $request)
     {
+        // Ellenőrizzük, hogy a user be van-e jelentkezve (Sanctum)
+        if (!$request->user()) {
+            return response()->json(['hiba' => 'Bejelentkezés szükséges!'], 401);
+        }
+
         $konyv = Konyv::find($request->konyv_id);
-        
-        if(!$konyv || $konyv->db_szam <= 0){
-            return response()->json([
-                'hiba' => 'Sajnos ez a könyv jelenleg elfogyott.'
-            ], 400);
+
+        if (!$konyv || $konyv->db_szam <= 0) {
+            return response()->json(['hiba' => 'Nincs készleten'], 400);
         }
 
         $foglalas = new Foglalas();
-        $foglalas->fill($request->all());
+        $foglalas->konyv_id = $request->konyv_id;
+        $foglalas->user_id = $request->user()->id; // Itt vesszük ki a tokenből!
         $foglalas->save();
-        $foglalas->refresh();
 
-        $konyv->refresh();
-        
-        return response()->json(['uzenet' => 'Sikeres foglalás!', 'foglalas' => $foglalas, 'konyv' => $konyv], 201);
+        return response()->json(['uzenet' => 'Sikeres foglalás!'], 201);
     }
+
     /**
      * Display the specified resource.
      *
@@ -56,9 +61,9 @@ class FoglalasController extends Controller
         return Foglalas::find($user_id);
     }
 
-    public function foglal(Request $request) 
+    public function foglal(Request $request)
     {
-        $userId = $request->user()->id;   
+        $userId = $request->user()->id;
         $adatok = \App\Models\Foglalas::where('user_id', $userId)
             ->with('konyv')
             ->get();
@@ -89,28 +94,25 @@ class FoglalasController extends Controller
      * @param  \App\Models\Foglalas  $foglalas
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, Foglalas $user_id)
+    public function destroy($id)
     {
-        $foglalas = Foglalas::find($user_id);
+        $foglalas = Foglalas::findOrFail($id);
         $foglalas->delete();
 
-        $konyv = Konyv::find($request->konyv_id);    
-        $konyv->refresh();
-
-        return response()->json(null,200);
+        return response()->json(['message' => 'Foglalás törölve, készlet visszatöltve.'], 200);
     }
 
-    public function torol(Request $request, $id) 
+    public function torol(Request $request, $id)
     {
-        $foglalas = \App\Models\Foglalas::where('id', $id)
+        $foglalas = Foglalas::where('id', $id)
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$foglalas) {
-            return response()->json(['message' => 'Foglalás nem található'], 404);
+        if ($foglalas) {
+            $foglalas->delete();
+            return response()->json(['message' => 'Saját foglalás sikeresen törölve!']);
         }
 
-        $foglalas->delete();
-        return response()->json(['message' => 'Sikeres törlés!']);
+        return response()->json(['message' => 'Foglalás nem található vagy nincsen jogosultsága'], 404);
     }
 }

@@ -33,12 +33,6 @@ class DolgozoController extends Controller
             'message' => 'Sikeres bejelentkezés!'
         ], 200);
     }
-
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-        return response(['message' => 'Sikeres kijelentkezés!'], 200);
-    }
     
     /**
      * Display a listing of the resource.

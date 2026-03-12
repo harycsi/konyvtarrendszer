@@ -27,7 +27,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Kovács Mária",
             "user_nev" => "konyvtar1",
-            "jelszo" => "konyv123",
+            "jelszo" => Hash::make("konyv123"),
             "telefonszam" => "06203123456",
             "role" => 1,
         ]);
@@ -35,7 +35,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Probst Attila",
             "user_nev" => "raktaros1",
-            "jelszo" => "raktar123",
+            "jelszo" => Hash::make("raktar123"),
             "telefonszam" => "06205858417",
             "role" => 2,
         ]);
@@ -43,7 +43,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Mogyorósi Merse",
             "user_nev" => "admin",
-            "jelszo" => "admin123",
+            "jelszo" => Hash::make("admin123"),
             "telefonszam" => "06205554848",
             "role" => 0,
         ]);
@@ -51,7 +51,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Tóth Gyöngyvér",
             "user_nev" => "konyvtar2",
-            "jelszo" => "konyv456",
+            "jelszo" => Hash::make("konyv456"),
             "telefonszam" => "06305684477",
             "role" => 1,
         ]);
@@ -59,7 +59,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Szentendrey Klára",
             "user_nev" => "konyvtar3",
-            "jelszo" => "konyv789",
+            "jelszo" => Hash::make("konyv789"),
             "telefonszam" => "06709258741",
             "role" => 1,
         ]);
@@ -67,7 +67,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Papp Tamás",
             "user_nev" => "raktaros2",
-            "jelszo" => "raktar456",
+            "jelszo" => Hash::make("raktar456"),
             "telefonszam" => "06206664512",
             "role" => 2,
         ]);
@@ -75,7 +75,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Tóth Elemér",
             "user_nev" => "raktaros3",
-            "jelszo" => "raktar789",
+            "jelszo" => Hash::make("raktar789"),
             "telefonszam" => "06707415821",
             "role" => 2,
         ]);
@@ -83,7 +83,7 @@ class CreateDolgozosTable extends Migration
         Dolgozo::create([
             "nev" => "Fekete Anna",
             "user_nev" => "konyvtar4",
-            "jelszo" => "konyv111",
+            "jelszo" => Hash::make("konyv111"),
             "telefonszam" => "06704457781",
             "role" => 1,
         ]);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../../App.css';
 import { NavLink } from 'react-router-dom';
-import { UserLogout } from '../Auth/LogoutPage';
+import { Logout } from '../Auth/LogoutPage';
 
 interface Kolcsonzes {
     user_id: number;
@@ -27,6 +27,7 @@ useEffect(() => {
         fetch(`http://localhost:8000/api/kolcsonzes`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
         })
@@ -59,7 +60,7 @@ useEffect(() => {
             <li><NavLink to="/kolcsonzes">Kölcsönzéseim</NavLink></li>
             <li><NavLink to="/foglalas">Foglalásaim</NavLink></li>
             <li><NavLink to="/profil">Profilom</NavLink></li>
-            <li><button type="button" onClick={UserLogout} className="nav-link-button">
+            <li><button type="button" onClick={() => Logout('/belepes')} className="nav-link-button">
                 Kilépés</button></li>
             </ul>
         </nav>
