@@ -30,7 +30,7 @@ export const UsersLista = () => {
         const fetchUsers = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/api/user', {
-                    headers: { 
+                    headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
@@ -46,8 +46,8 @@ export const UsersLista = () => {
 
     const filteredUsers = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
-        return users.filter(u => 
-            u.id.toString().includes(lowerSearch) || 
+        return users.filter(u =>
+            u.id.toString().includes(lowerSearch) ||
             u.user_nev.toLowerCase().includes(lowerSearch) ||
             u.nev.toLowerCase().includes(lowerSearch) // Most már név alapján is szűr!
         );
@@ -60,7 +60,7 @@ export const UsersLista = () => {
                     <div className="logo">Könyvtárrendszer</div>
                     <nav>
                         <ul>
-                            <li><NavLink to="/konyvtarrendszer">Könyvek</NavLink></li> 
+                            <li><NavLink to="/konyvtarrendszer">Könyvek</NavLink></li>
                             <li><NavLink to="/kolcsonzok">Kölcsönzők</NavLink></li>
                             <li><NavLink to="/kolcsonzesek">Kölcsönzések</NavLink></li>
                             <li><NavLink to="/foglalasok">Foglalások</NavLink></li>
@@ -75,6 +75,7 @@ export const UsersLista = () => {
 
                 <div className="users-container">
                     <UsersSearchBar />
+                    <hr />
                     <h3>Kölcsönzők</h3>
                     <table className="users-tablazat">
                         <thead>
@@ -94,7 +95,9 @@ export const UsersLista = () => {
                                     <td>{u.nev}</td>
                                     <td>{u.user_nev}</td>
                                     <td>{u.email_cim}</td>
-                                    <td>{u.lakcim}</td>
+                                    <td><span>
+                                        {u.lakcim.replace(/\.(?!\s|$)/g, ". ")}
+                                    </span></td>
                                     <td>{u.telefonszam}</td>
                                 </tr>
                             ))}
@@ -109,15 +112,16 @@ export const UsersLista = () => {
 const UsersSearchBar = () => {
     const context = useContext(UsersContext);
     if (!context) return null;
-    
+
     return (
         <form onSubmit={(e) => e.preventDefault()}>
-            <label>Keresés (név szerint):
-                <input 
-                    type="text" 
-                    value={context.searchTerm}  
-                    onChange={(e) => context.setSearchTerm(e.target.value)} 
-                />      
+            <label>Keresés:
+                <input
+                    type="text"
+                    value={context.searchTerm}
+                    placeholder="Név..."
+                    onChange={(e) => context.setSearchTerm(e.target.value)}
+                />
             </label>
         </form>
     );

@@ -51,16 +51,9 @@ h3 {
   box-sizing: border-box;
 }
 
-.login-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 15px 0;
+.login-box button {
+  padding: 5px 10px;
+  font-size: 0.85rem;
 }
 
 .form-footer {
@@ -200,8 +193,7 @@ hr {
 }
 
 .book-card:hover {
-  transform: translateY(-5px);
-  /* Megemelkedik hoverre */
+  transform: translateY(-5px); /* Megemelkedik hoverre */
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -257,8 +249,7 @@ hr {
 .kolcsonzes-lista-container {
   margin: 20px 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: auto;
-  /* Mobilon görgethetővé teszi, ha túl széles */
+  overflow-x: auto; /* Mobilon görgethetővé teszi, ha túl széles */
 }
 
 /* Alap táblázat stílus */
@@ -267,6 +258,15 @@ hr {
 .users-tablazat,
 .kolcsonzes-tablazat {
   width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.foglalas-tablazat {
+  width: max-content;
   border-collapse: collapse;
   background-color: #fff;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
@@ -284,6 +284,13 @@ hr {
   text-align: left;
 }
 
+.foglalas-tablazat thead,
+.kolcsonzes-tablazat thead {
+  background-color: #2c3e50;
+  color: #ffffff;
+  text-align: center;
+}
+
 .konyv-tablazat th,
 .konyv-tablazat td,
 .foglalas-tablazat th,
@@ -297,12 +304,17 @@ hr {
 }
 
 .konyv-tablazat td,
+.users-tablazat td {
+  text-align: left;
+  vertical-align: middle;
+}
+
 .foglalas-tablazat td,
-.users-tablazat td,
 .kolcsonzes-tablazat td {
   text-align: center;
   vertical-align: middle;
 }
+
 
 /* Sorok váltakozó színezése */
 .konyv-tablazat tbody tr:nth-of-type(even) {
@@ -367,17 +379,16 @@ hr {
   font-size: 0.85rem;
 }
 
+/* Szürke, ha nem elérhető */
 .kolcsonzes-gomb:disabled,
 .foglalas-gomb:disabled {
-  background-color: #bdc3c7;
-  /* Szürke, ha nem elérhető */
+  background-color: #bdc3c7; 
   cursor: not-allowed;
 }
 
 .sort-button-group {
   display: inline-flex;
   background-color: #f3f4f6;
-  /* Világosszürke háttér */
   padding: 4px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
@@ -404,7 +415,6 @@ hr {
 .sort-button-group button.active {
   background-color: #ffffff;
   color: #2563eb;
-  /* Szép kék szín */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -429,19 +439,12 @@ hr {
   width: 90%;
   position: relative;
   color: #333;
-
-  /* Ezek a fontos sorok: */
-  max-height: 85vh;
-  /* A képernyő magasságának max 85%-a lehet */
-  overflow-y: auto;
-  /* Ha hosszabb a tartalom, megjelenik a belső görgetősáv */
+  max-height: 85vh; /* A képernyő magasságának max 85%-a lehet */
+  overflow-y: auto; /* Ha hosszabb a tartalom, megjelenik a belső görgetősáv */
 }
 
-/* Opcionális: a leírás szövegének formázása */
 .description {
   line-height: 1.6;
-  white-space: pre-wrap;
-  /* Megtartja a sortöréseket, ha vannak a szövegben */
   margin-top: 15px;
 }
 
@@ -457,7 +460,7 @@ hr {
 
 /* Késedelmes sorok kiemelése */
 .overdue-row {
-    background-color: #fff5f5; /* Nagyon halvány piros háttér */
+  background-color: #fff5f5; /* Nagyon halvány piros háttér */
 }
 
 .overdue-date {
@@ -465,7 +468,81 @@ hr {
     font-weight: bold;
 }
 
-.warning-icon {
-    font-size: 1.2rem;
-    vertical-align: middle;
+.profile-grid,
+.edit-section {
+  max-width: max-content;
+  margin: 2rem 0;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.user-profile {
+  display: grid;
+  gap: 12px;
+}
+
+.user-profile p {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 0;
+  transition: background-color 0.3s ease;
+}
+
+.user-profile p:hover {
+  background-color: #e9ecef;
+}
+
+.user-profile strong,
+.foglalas strong,
+.kolcsonzes strong {
+  color: #555;
+  font-weight: 600;
+  margin-right: 10px;
+  min-width: 140px; 
+}
+
+/* Értékek stílusa */
+.user-profile span {
+  color: #212529;
+  text-align: right;
+}
+
+.edit-section {
+  max-width: 350px;
+  margin: 2rem 0;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modositas-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 350px;
+}
+.modositas-form input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.alert-box {
+    background: #e7f3fe;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: #31708f;
+}
+
+.modositas-form button {    
+  align-self: center;
 }

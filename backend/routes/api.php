@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdatmodositasController;
 use App\Http\Controllers\DolgozoController;
 use App\Http\Controllers\FoglalasController;
 use App\Http\Controllers\KolcsonzesController;
@@ -23,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get("/konyvtar/keres", [KonyvController::class, "keres"]); //pipa
 Route::get("/konyvtar/konyv-lista", [KonyvController::class, "index"]); //pipa
 Route::get("/profil", [UserController::class, "profil"]);  //pipa
+Route::post("/profil/modositas", [AdatmodositasController::class, "store"]);
 Route::post("/foglal", [FoglalasController::class, "store"]); //pipa
 Route::get("/foglalas", [FoglalasController::class, "foglal"]); //pipa
 Route::delete("/foglalas/{id}", [FoglalasController::class, "torol"]); //pipa
@@ -33,6 +35,8 @@ Route::post("/kilepes", [UserController::class, "logout"]);
 Route::middleware(['role:0'])->group(function () {
     Route::put("/user/{id}", [UserController::class, "update"]);
     Route::delete("/user/{id}", [UserController::class, "destroy"]);
+    Route::post("/user/elfogad/{id}", [AdatmodositasController::class, "save"]);    
+    Route::post("/user/elutasit/{id}", [AdatmodositasController::class, "reject"]);
     Route::apiResource("dolgozo", DolgozoController::class);
     });
 

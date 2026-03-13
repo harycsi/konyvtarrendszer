@@ -99,7 +99,7 @@ const handleDelete = (id: number) => {
                     <p><strong>Könyv azonosító:</strong> {f.konyv_id}</p>
                     <p><strong>Könyv címe:</strong> {f.konyv ? f.konyv.cim : "Ismeretlen könyv"}</p>
                     <p><strong>Foglalás dátuma:</strong> {f.fogl_datum}</p>
-                    <button onClick={() => handleDelete(f.id)}>Lemondás</button>
+                    <button className="foglalas-gomb" onClick={() => handleDelete(f.id)}>Lemondás</button>
             <hr />
           </div>
           ))

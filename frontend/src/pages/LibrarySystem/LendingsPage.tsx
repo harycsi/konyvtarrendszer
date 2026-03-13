@@ -88,6 +88,7 @@ export const KolcsonzesLista = () => {
 
                 <div className="kolcsonzes-lista-container">
                     <KolcsonzesSearchBar />
+                    <hr />
                     <h3>Aktuális kölcsönzések</h3>
                     <table className="kolcsonzes-tablazat">
                         <thead>
@@ -137,10 +138,11 @@ const KolcsonzesSearchBar = () => {
 
     return (
         <form onSubmit={(e) => e.preventDefault()}>
-            <label>Keresés (ID):
+            <label>Keresés:
                 <input
                     type="text"
                     value={context.searchTerm}
+                    placeholder="ID..."
                     onChange={(e) => context.setSearchTerm(e.target.value)}
                 />
             </label>

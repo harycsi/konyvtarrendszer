@@ -86,7 +86,8 @@ export const FoglalasLista = () => {
 
                 <div className="foglalas-lista-container">
                     <FoglalasSearchBar />
-                    <h3>Aktuális Foglalások</h3>
+                    <hr />
+                    <h3>Aktuális foglalások</h3>
                     <table className="foglalas-tablazat">
                         <thead>
                             <tr>
@@ -94,7 +95,7 @@ export const FoglalasLista = () => {
                                 <th>Felhasználó ID</th>
                                 <th>Könyv ID</th>
                                 <th>Dátum</th>
-                                <th>Kölcsönzés</th>
+                                <th>Művelet</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -126,10 +127,11 @@ const FoglalasSearchBar = () => {
 
     return (
         <form onSubmit={(e) => e.preventDefault()}>
-            <label>Keresés (ID):
+            <label>Keresés:
                 <input
                     type="text"
                     value={context.searchTerm}
+                    placeholder="ID..."
                     onChange={(e) => context.setSearchTerm(e.target.value)}
                 />
             </label>
