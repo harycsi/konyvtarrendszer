@@ -29,10 +29,12 @@ export const FoglalasLista = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const context = useContext(LibraryContext);
 
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
+
     useEffect(() => {
         const fetchFoglalasok = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token || role !== "1") return;
             try {
                 const response = await axios.get('http://localhost:8000/api/konyvtar/foglalas-lista', {
                     headers: {
@@ -47,7 +49,16 @@ export const FoglalasLista = () => {
             }
         };
         fetchFoglalasok();
-    }, []);
+    }, [token, role]);
+
+    if (role !== "1") {
+        return (
+            <div className="library-container">
+                <p>Nincs jogosultságod az oldal megtekintéséhez!</p>
+                <NavLink to="/">Vissza a főoldalra</NavLink>
+            </div>
+        );
+    }
 
     const filteredFoglalasok = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
@@ -58,7 +69,7 @@ export const FoglalasLista = () => {
         );
     }, [searchTerm, foglalasok]);
 
-    if (!context){
+    if (!context) {
         return <p>Betöltés (Context hiba)...</p>;
     }
 

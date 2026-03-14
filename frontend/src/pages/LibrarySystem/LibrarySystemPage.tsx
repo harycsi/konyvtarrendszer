@@ -86,7 +86,18 @@ export const LibraryProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const LibrarySystem = () => {
-    const { books, setBooks, searchTerm, fetchBooks } = useLibrary();
+    const { books, setBooks } = useLibrary();
+    const role = String(localStorage.getItem('role'));
+    console.log("DEBUG - A tárolt role:", role); // Nézd meg a konzolt (F12)!
+    
+   if (role !== "1") { 
+    return (
+      <div className="library-container">
+        <p>Nincs jogosultságod ehhez az oldalhoz!</p>
+        {role !== "1" && <NavLink to="/konyvtar">Ugrás a könyvtár felületre!</NavLink>}
+      </div>
+    );
+  }
 
     return (
         <div className="library-container">

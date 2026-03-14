@@ -34,10 +34,20 @@ export const Library = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
+  const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token');
+
+  if (!token || role === "1") {
+    return (
+      <div className="library-container">
+        <p>Ez az oldal csak regisztrált kölcsönzők számára elérhető!</p>
+        {role === "1" && <NavLink to="/konyvtarrendszer">Ugrás a könyvtáros felületre!</NavLink>}
+      </div>
+    );
+  }
+
   useEffect(() => {
-    const token = localStorage.getItem('token'); // A login-nál elmentett token
     const delayDebounceFn = setTimeout(() => {
-      // URL meghatározása: ha van keresőkifejezés, a kereső végpontot hívjuk
       const url = searchTerm.length > 2
         ? `http://localhost:8000/api/konyvtar/keres?query=${searchTerm}&sort=${sortBy}`
         : `http://localhost:8000/api/konyvtar/konyv-lista?sort=${sortBy}`;
@@ -58,7 +68,7 @@ export const Library = () => {
     }, 300); // 300ms várakozás, hogy ne terheljük a szervert minden betűnél
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, sortBy]); // Újratölt, ha változik a keresőszó
+  }, [searchTerm, sortBy, token, role]); // Újratölt, ha változik a keresőszó
 
   const contextValue: LibraryContextType = {
     books,
@@ -158,7 +168,7 @@ const BookList = () => {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest' 
+        'X-Requested-With': 'XMLHttpRequest'
       },
       body: JSON.stringify({ konyv_id: bookId })
     })
@@ -168,11 +178,11 @@ const BookList = () => {
 
           // Frissítésnél is kell a token a fejlécbe!
           const response = await fetch('http://localhost:8000/api/konyvtar/konyv-lista', {
-            headers: { 
+            headers: {
               'Authorization': `Bearer ${token}`,
               'Accept': 'application/json',
               'Content-Type': 'application/json',
-          }
+            }
           });
 
           if (response.ok) {

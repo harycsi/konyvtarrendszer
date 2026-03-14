@@ -21,8 +21,11 @@ export const LentPage = () => {
     const [kolcsonzesek, setKolcsonzesek] = useState<Kolcsonzes[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
+
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        if (!token || role === "1") return;
 
         fetch(`http://localhost:8000/api/kolcsonzes`, {
             headers: {
@@ -45,7 +48,7 @@ export const LentPage = () => {
                 setLoading(false);
             });
 
-    }, []);
+    }, [token, role]);
 
     if (loading) return <div>Betöltés...</div>;
 

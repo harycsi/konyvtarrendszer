@@ -31,11 +31,14 @@ const KolcsonzesContext = createContext<KolcsonzesContextType | undefined>(undef
 export const KolcsonzesLista = () => {
     const [kolcsonzesek, setKolcsonzesek] = useState<Kolcsonzes[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-
     const { fetchBooks } = useLibrary();
+
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchKolcsonzesek = async () => {
+            if (!token || role !== "1") return;
             try {
                 const response = await axios.get('http://localhost:8000/api/konyvtar/kolcsonzes-lista', {
                     headers: {
@@ -50,7 +53,16 @@ export const KolcsonzesLista = () => {
             }
         };
         fetchKolcsonzesek();
-    }, []);
+    }, [token, role]);
+
+    if (role !== "1") {
+        return (
+            <div className="library-container">
+                <p>Nincs jogosultságod az oldal megtekintéséhez!</p>
+                <NavLink to="/">Vissza a főoldalra</NavLink>
+            </div>
+        );
+    }
 
     const filteredKolcsonzesek = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
@@ -68,6 +80,7 @@ export const KolcsonzesLista = () => {
 
     return (
         <KolcsonzesContext.Provider value={{ searchTerm, setSearchTerm, kolcsonzesek, setKolcsonzesek }}>
+
             <div className="library-container">
                 <header>
                     <div className="logo">Könyvtárrendszer</div>

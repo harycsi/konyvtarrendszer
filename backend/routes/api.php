@@ -51,6 +51,7 @@ Route::middleware(['role:1'])->group(function () {
     Route::get("/konyvtar/kolcsonzes/lejart", [KolcsonzesController::class, "lejartKolcsonzesek"]);
     Route::post("/konyvtar/kolcsonzes", [KolcsonzesController::class, "store"]);
     Route::delete("/konyvtar/kolcsonzes/{id}", [KolcsonzesController::class, "destroy"]);  
+    
     });
 
 //Csak a Raktáros (2)

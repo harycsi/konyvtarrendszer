@@ -24,9 +24,12 @@ export const ProfilePage = () => {
         uj_tel: ''
     });
     const [message, setMessage] = useState('');
+    
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        if (!token || role === "1") return;
 
         fetch('http://localhost:8000/api/profil', {
             headers: {
@@ -47,7 +50,7 @@ export const ProfilePage = () => {
                 setLoading(false);
             });
 
-    }, []);
+    }, [token, role]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
