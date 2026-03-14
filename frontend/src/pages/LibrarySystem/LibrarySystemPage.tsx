@@ -31,10 +31,10 @@ export const LibraryProvider = ({ children }: { children: React.ReactNode }) => 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState("cim");
     const [books, setBooks] = useState<Book[]>([]);
+    const [token, setToken] = useState(localStorage.getItem('token'));
 
     const fetchBooks = async () => {
         const token = localStorage.getItem('token');
-        if (!token) return; // Ha nincs token, meg se próbálja
 
         try {
             const res = await axios.get('http://localhost:8000/api/konyvtar/konyv-lista', {
@@ -49,30 +49,32 @@ export const LibraryProvider = ({ children }: { children: React.ReactNode }) => 
         }
     };
 
-    useEffect(() => {
-        fetchBooks();
-    }, []);
-
     // A keresési useEffect-et ide hozzuk át, hogy globálisan működjön
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        };
+        const currentToken = localStorage.getItem('token');
+        if (currentToken !== token) {
+            setToken(currentToken);
+        }
+
+        if (!token) return;
 
         const delayDebounceFn = setTimeout(() => {
-            if (searchTerm.length > 2) {
-                axios.get(`http://localhost:8000/api/konyvtar/keres?query=${searchTerm}`, config)
-                    .then(res => setBooks(res.data));
-            } else if (searchTerm.length === 0) {
-                fetchBooks();
-            }
+            const url = searchTerm.length > 2
+                ? `http://localhost:8000/api/konyvtar/keres?query=${searchTerm}&sort=${sortBy}`
+                : `http://localhost:8000/api/konyvtar/konyv-lista?sort=${sortBy}`;
+
+            axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            })
+                .then(res => setBooks(res.data))
+                .catch(err => console.error("Hiba: ", err));
         }, 300);
+
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm]);
+    }, [searchTerm, sortBy, token]);
 
     const contextValue = { books, searchTerm, sortBy, setBooks, setSearchTerm, setSortBy, handleSearch: setSearchTerm, fetchBooks };
 

@@ -10,46 +10,46 @@ export const Login = () => {
   const handleLogin = async () => {
     try {
       const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
-    };
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+      };
 
-    const xsrfToken = getCookie("XSRF-TOKEN");
+      const xsrfToken = getCookie("XSRF-TOKEN");
 
-    // 3️⃣ Bejelentkezés X-XSRF-TOKEN headerrel
-    const response = await fetch("http://localhost:8000/api/belepes", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-XSRF-TOKEN": decodeURIComponent(xsrfToken as string)
-      },
-      body: JSON.stringify({
-        user_nev: username,
-        jelszo: password
-      })
-    });
+      // 3️⃣ Bejelentkezés X-XSRF-TOKEN headerrel
+      const response = await fetch("http://localhost:8000/api/belepes", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-XSRF-TOKEN": decodeURIComponent(xsrfToken as string)
+        },
+        body: JSON.stringify({
+          user_nev: username,
+          jelszo: password
+        })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      console.error("Hiba:", data);
-      return;
-    }
+      if (!response.ok) {
+        console.error("Hiba:", data);
+        return;
+      }
 
-    console.log("Sikeres bejelentkezés:", data);
+      console.log("Sikeres bejelentkezés:", data);
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-    navigate('/konyvtarrendszer'); 
+      navigate('/konyvtarrendszer');
 
     } catch (error) {
-       console.error("Login hiba:", error);
+      console.error("Login hiba:", error);
     }
-}
+  }
 
   return <>
     <div className="login-container">
@@ -57,7 +57,7 @@ export const Login = () => {
         <h1>Könyvtárrendszer</h1>
         <h3>Bejelentkezés</h3>
 
-         <form onSubmit={(e) => e.preventDefault()}>
+        <form>
           <div className="input-group">
             <label>Felhasználó név:</label>
             <input
@@ -79,5 +79,5 @@ export const Login = () => {
         </form>
       </div>
     </div>
-</>
+  </>
 }

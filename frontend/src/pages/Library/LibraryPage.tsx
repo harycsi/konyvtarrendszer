@@ -125,7 +125,6 @@ const SearchBar = () => {
     <label>Keresés:
       <input
         type="text"
-        placeholder="Pl. Gárdonyi..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
