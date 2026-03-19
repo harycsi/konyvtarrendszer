@@ -18,7 +18,7 @@ class AdatmodositasController extends Controller
         ]);
 
         $modositas = new Adatmodositas();
-        $modositas->user_id = $request->user()->id; // A bejelentkezett user ID-ja
+        $modositas->user_id = $request->user()->id;
         $modositas->fill($request->only(['uj_nev', 'uj_email', 'uj_cim', 'uj_tel']));
         $modositas->statusz = 'fuggo';
         $modositas->save();
@@ -34,10 +34,8 @@ class AdatmodositasController extends Controller
             return response()->json(['message' => 'Ez a kérés már fel lett dolgozva.'], 400);
         }
 
-        // Megkeressük a tényleges felhasználót
         $user = User::findOrFail($keres->user_id);
 
-        // Csak azokat a mezőket írjuk át, amikre érkezett kérés
         if ($keres->uj_nev) $user->nev = $keres->uj_nev;
         if ($keres->uj_email) $user->email_cim = $keres->uj_email;
         if ($keres->uj_cim) $user->lakcim = $keres->uj_cim;
@@ -45,7 +43,6 @@ class AdatmodositasController extends Controller
 
         $user->save();
 
-        // Frissítjük a kérés állapotát
         $keres->statusz = 'elfogadva';
         $keres->save();
 

@@ -21,4 +21,9 @@ class Foglalas extends Model
     {
         return $this->belongsTo(Konyv::class, 'konyv_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -15,20 +15,20 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 //Publikus (Bárki elérheti)
-Route::post("/belepes", [DolgozoController::class, "login"]); //pipa
-Route::post("/user-belepes", [UserController::class, "login"]); //pipa
-Route::post("/regisztral", [UserController::class, "store"]); //pipa
+Route::post("/belepes", [DolgozoController::class, "login"]);
+Route::post("/user-belepes", [UserController::class, "login"]);
+Route::post("/regisztral", [UserController::class, "store"]);
 
 //Védett útvonalak (csak érvényes tokennel)
 Route::middleware('auth:sanctum')->group(function () {
-Route::get("/konyvtar/keres", [KonyvController::class, "keres"]); //pipa
-Route::get("/konyvtar/konyv-lista", [KonyvController::class, "index"]); //pipa
-Route::get("/profil", [UserController::class, "profil"]);  //pipa
+Route::get("/konyvtar/keres", [KonyvController::class, "keres"]);
+Route::get("/konyvek", [KonyvController::class, "index"]);
+Route::get("/profil", [UserController::class, "profil"]);
 Route::post("/profil/modositas", [AdatmodositasController::class, "store"]);
-Route::post("/foglal", [FoglalasController::class, "store"]); //pipa
-Route::get("/foglalas", [FoglalasController::class, "foglal"]); //pipa
-Route::delete("/foglalas/{id}", [FoglalasController::class, "torol"]); //pipa
-Route::get("/kolcsonzes", [KolcsonzesController::class, "kolcson"]); //pipa
+Route::post("/foglal", [FoglalasController::class, "store"]);
+Route::get("/foglalas", [FoglalasController::class, "foglal"]);
+Route::delete("/foglalas/{id}", [FoglalasController::class, "torol"]);
+Route::get("/kolcsonzes", [KolcsonzesController::class, "kolcson"]);
 Route::post("/kilepes", [UserController::class, "logout"]);
 
 //Csak az Admin (0)
@@ -42,14 +42,14 @@ Route::middleware(['role:0'])->group(function () {
 
 //Csak a Könyvtáros (1)
 Route::middleware(['role:1'])->group(function () {
-    Route::get("/konyvtar/foglalas-lista", [FoglalasController::class, "index"]);  //pipa
+    Route::get("/konyvtar/konyv-lista", [KonyvController::class, "index"]);
+    Route::get("/konyvtar/foglalas-lista", [FoglalasController::class, "index"]);
     Route::get("/konyvtar/foglalas/{user_id}", [FoglalasController::class, "show"]);
-    Route::put("/konyvtar/foglalas/{user_id}", [FoglalasController::class, "update"]);
     Route::delete("/konyvtar/foglalas/{id}", [FoglalasController::class, "destroy"]);
-    Route::get("/konyvtar/kolcsonzes-lista", [KolcsonzesController::class, "index"]);   //pipa
+    Route::get("/konyvtar/kolcsonzes-lista", [KolcsonzesController::class, "index"]);
     Route::get("/konyvtar/kolcsonzes/{user_id}", [KolcsonzesController::class, "show"]);
-    Route::get("/konyvtar/kolcsonzes/lejart", [KolcsonzesController::class, "lejartKolcsonzesek"]);
     Route::post("/konyvtar/kolcsonzes", [KolcsonzesController::class, "store"]);
+    Route::put("/konyvtar/kolcsonzes/{id}", [KolcsonzesController::class, "update"]);
     Route::delete("/konyvtar/kolcsonzes/{id}", [KolcsonzesController::class, "destroy"]);  
     
     });

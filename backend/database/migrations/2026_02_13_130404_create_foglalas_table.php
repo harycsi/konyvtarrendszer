@@ -17,6 +17,7 @@ class CreateFoglalasTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('konyv_id')->constrained('konyv');
+            $table->unique(['user_id', 'konyv_id']);
             $table->timestamp('fogl_datum')->useCurrent();
             $table->timestamps(); 
         });

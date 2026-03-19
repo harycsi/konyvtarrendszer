@@ -26,18 +26,14 @@ export const UsersLista = () => {
     const [users, setUsers] = useState<Users[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
 
-    const role = localStorage.getItem('role');
-    const token = localStorage.getItem('token');
-
     useEffect(() => {
         const fetchUsers = async () => {
-            if (!token || role !== "1") return;
+            const adminToken = localStorage.getItem('admin_token');
             try {
                 const response = await axios.get('http://localhost:8000/api/user', {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        Authorization: `Bearer ${adminToken}`,
                         'Accept': 'application/json',
-                        'Content-Type': 'application/json'
                     }
                 });
                 setUsers(response.data);
@@ -46,23 +42,13 @@ export const UsersLista = () => {
             }
         };
         fetchUsers();
-    }, [token, role]);
-
-    if (role !== "1") {
-        return (
-            <div className="library-container">
-                <p>Nincs jogosultságod az oldal megtekintéséhez!</p>
-                <NavLink to="/">Vissza a főoldalra</NavLink>
-            </div>
-        );
-    }
+    }, []);
 
     const filteredUsers = useMemo(() => {
         const lowerSearch = searchTerm.toLowerCase();
         return users.filter(u =>
-            u.id.toString().includes(lowerSearch) ||
             u.user_nev.toLowerCase().includes(lowerSearch) ||
-            u.nev.toLowerCase().includes(lowerSearch) // Most már név alapján is szűr!
+            u.nev.toLowerCase().includes(lowerSearch)
         );
     }, [searchTerm, users]);
 

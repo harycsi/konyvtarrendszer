@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import '../../App.css';
+import axios from 'axios';
 import { NavLink } from 'react-router-dom';
 import { Logout } from '../Auth/LogoutPage';
 
@@ -21,34 +22,30 @@ export const LentPage = () => {
     const [kolcsonzesek, setKolcsonzesek] = useState<Kolcsonzes[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const role = localStorage.getItem('role');
-    const token = localStorage.getItem('token');
-
     useEffect(() => {
-        if (!token || role === "1") return;
+        const fetchKolcsonzesek = async () => {
+            const token = localStorage.getItem('user_token');
 
-        fetch(`http://localhost:8000/api/kolcsonzes`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+            try {
+                const response = await axios.get('http://localhost:8000/api/kolcsonzes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                setKolcsonzesek(response.data);
+            } catch (err: any) {
+                console.error("Hiba a kölcsönzések betöltésekor:", err);
+                if (err.response?.status === 401) {
+                    alert("Lejárt a munkamenet, jelentkezz be újra!");
+                }
+            } finally {
+                setLoading(false);
             }
-        })
+        };
 
-            .then(res => {
-                if (!res.ok) throw new Error("Sikertelen betöltés");
-                return res.json();
-            })
-            .then(data => {
-                setKolcsonzesek(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Hiba:", err);
-                setLoading(false);
-            });
-
-    }, [token, role]);
+        fetchKolcsonzesek();
+    }, []);
 
     if (loading) return <div>Betöltés...</div>;
 

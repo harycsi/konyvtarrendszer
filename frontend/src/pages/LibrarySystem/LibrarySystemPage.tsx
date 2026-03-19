@@ -1,9 +1,11 @@
 import { useState, createContext, useContext, useEffect } from 'react';
 import '../../App.css';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Logout } from '../Auth/LogoutPage';
 import { handleKolcsonzes } from '../../ApiActions';
 import axios from 'axios';
+import { Modal, InputModal } from '../../Modals';
+
 
 interface Book {
     id: number;
@@ -23,23 +25,34 @@ interface LibraryContextType {
     setBooks: React.Dispatch<React.SetStateAction<Book[]>>;
     handleSearch: (term: string) => void;
     fetchBooks: () => void;
+    modal: { msg: string | null; type: 'success' | 'error' };
+    notify: (msg: string, type: 'success' | 'error') => void;
 }
 
 export const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
 export const LibraryProvider = ({ children }: { children: React.ReactNode }) => {
     const [searchTerm, setSearchTerm] = useState("");
-    const [sortBy, setSortBy] = useState("cim");
+    const [sortBy, setSortBy] = useState("");
     const [books, setBooks] = useState<Book[]>([]);
-    const [token, setToken] = useState(localStorage.getItem('token'));
+    const location = useLocation();
+
+    const [modal, setModal] = useState<{ msg: string | null; type: 'success' | 'error' }>({
+        msg: null,
+        type: 'success'
+    });
+
+    const notify = (msg: string, type: 'success' | 'error') => {
+        setModal({ msg, type });
+    };
 
     const fetchBooks = async () => {
-        const token = localStorage.getItem('token');
+        const adminToken = localStorage.getItem('admin_token');
 
         try {
             const res = await axios.get('http://localhost:8000/api/konyvtar/konyv-lista', {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${adminToken}`,
                     'Accept': 'application/json',
                 }
             });
@@ -49,55 +62,68 @@ export const LibraryProvider = ({ children }: { children: React.ReactNode }) => 
         }
     };
 
-    // A keresési useEffect-et ide hozzuk át, hogy globálisan működjön
-    useEffect(() => {
-        const currentToken = localStorage.getItem('token');
-        if (currentToken !== token) {
-            setToken(currentToken);
+    const getData = async () => {
+        const adminToken = localStorage.getItem('admin_token');
+
+        if (!adminToken) {
+            console.warn("Nincs token, lekérés kihagyva.");
+            return;
         }
 
-        if (!token) return;
+        const url = searchTerm.length > 2
+            ? `http://localhost:8000/api/konyvtar/keres?query=${searchTerm}&sort=${sortBy}`
+            : `http://localhost:8000/api/konyvtar/konyv-lista?sort=${sortBy}`;
 
-        const delayDebounceFn = setTimeout(() => {
-            const url = searchTerm.length > 2
-                ? `http://localhost:8000/api/konyvtar/keres?query=${searchTerm}&sort=${sortBy}`
-                : `http://localhost:8000/api/konyvtar/konyv-lista?sort=${sortBy}`;
-
-            axios.get(url, {
+        try {
+            const res = await axios.get(url, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${adminToken}`,
                     'Accept': 'application/json'
                 }
-            })
-                .then(res => setBooks(res.data))
-                .catch(err => console.error("Hiba: ", err));
-        }, 300);
+            });
+            setBooks(res.data);
+        } catch (err) {
+            console.error("Hiba a betöltéskor:", err);
+        }
+    };
 
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, sortBy, token]);
+    useEffect(() => {
+        getData();
 
-    const contextValue = { books, searchTerm, sortBy, setBooks, setSearchTerm, setSortBy, handleSearch: setSearchTerm, fetchBooks };
+    }, [searchTerm, sortBy, location.key]);
+
+    const contextValue = { books, searchTerm, sortBy, setBooks, setSearchTerm, setSortBy, handleSearch: setSearchTerm, fetchBooks, modal, notify };
 
     return (
         <LibraryContext.Provider value={contextValue}>
             {children}
+            <Modal
+                msg={modal.msg}
+                type={modal.type}
+                onClose={() => setModal({ ...modal, msg: null })}
+            />
         </LibraryContext.Provider>
     );
 };
 
 export const LibrarySystem = () => {
-    const { books, setBooks } = useLibrary();
-    const role = String(localStorage.getItem('role'));
-    console.log("DEBUG - A tárolt role:", role); // Nézd meg a konzolt (F12)!
-    
-   if (role !== "1") { 
-    return (
-      <div className="library-container">
-        <p>Nincs jogosultságod ehhez az oldalhoz!</p>
-        {role !== "1" && <NavLink to="/konyvtar">Ugrás a könyvtár felületre!</NavLink>}
-      </div>
-    );
-  }
+    const { books, setBooks, notify } = useLibrary();
+    const [inputModalOpen, setInputModalOpen] = useState(false);
+    const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+
+    const openInputModal = (id: number) => {
+        setSelectedBookId(id);
+        setInputModalOpen(true);
+    };
+
+    const handleInputSubmit = (userId: string) => {
+        if (userId && selectedBookId) {
+            handleKolcsonzes(selectedBookId, Number(userId), setBooks, notify);
+            setInputModalOpen(false);
+        } else {
+            notify("Kérjük, adj meg egy érvényes ID-t!", "error");
+        }
+    };
 
     return (
         <div className="library-container">
@@ -143,13 +169,7 @@ export const LibrarySystem = () => {
                                         <button
                                             className="kolcsonzes-gomb"
                                             disabled={book.db_szam === 0}
-                                            onClick={() => {
-                                                const userId = window.prompt("Kérjük a kölcsönző ID-ját:");
-                                                if (userId) {
-                                                    handleKolcsonzes(book.id, Number(userId), setBooks);
-                                                }
-                                            }}
-                                        >
+                                            onClick={() => openInputModal(book.id)}>
                                             {book.db_szam > 0 ? "Kölcsönzés" : "Elfogyott"}
                                         </button>
                                     </td>
@@ -163,6 +183,12 @@ export const LibrarySystem = () => {
                     </tbody>
                 </table>
             </div>
+            <InputModal
+                isOpen={inputModalOpen}
+                title="Kölcsönző azonosítója"
+                onClose={() => setInputModalOpen(false)}
+                onSubmit={handleInputSubmit}
+            />
         </div>
     );
 };
@@ -172,8 +198,8 @@ export const useLibrary = () => {
 
     if (!context) throw Error("Nincs Provider átadva a komponensnek!");
 
-    const { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm, fetchBooks } = context;
-    return { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm, fetchBooks };
+    const { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm, fetchBooks, notify, modal } = context;
+    return { searchTerm, books, sortBy, setBooks, handleSearch, setSearchTerm, fetchBooks, notify, modal };
 }
 
 export const SearchBar = () => {

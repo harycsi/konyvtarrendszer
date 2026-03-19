@@ -1,70 +1,74 @@
 import { useState } from 'react';
 import '../../App.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    if(e) e.preventDefault();
+
     try {
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift();
-      };
-
-      const xsrfToken = getCookie("XSRF-TOKEN");
-
-      // 3️⃣ Bejelentkezés X-XSRF-TOKEN headerrel
-      const response = await fetch("http://localhost:8000/api/belepes", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-XSRF-TOKEN": decodeURIComponent(xsrfToken as string)
-        },
-        body: JSON.stringify({
+      const response = await axios.post("http://localhost:8000/api/belepes", 
+        {
           user_nev: username,
           jelszo: password
-        })
-      });
+        }, 
+        { withCredentials: true }
+      );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        console.error("Hiba:", data);
-        return;
+      // --- TÖBB FIÓK KEZELÉSE ---
+      const users = JSON.parse(localStorage.getItem('active_users') || '[]');
+      
+      const userData = { 
+        id: data.user.id, 
+        name: data.user.user_nev, 
+        token: data.token,
+        type: 'admin'
+      };
+
+      const index = users.findIndex((u: any) => u.id === data.user.id && u.type === 'admin');
+      
+      if (index === -1) {
+        users.push(userData);
+      } else {
+        users[index] = userData;
       }
 
-      console.log("Sikeres bejelentkezés:", data);
+      console.log("Sikeres dolgozói bejelentkezés:", data);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("role", data.user.role);
+      localStorage.setItem('active_users', JSON.stringify(users));
+      localStorage.setItem('current_admin_id', data.user.id);
+      localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_user", JSON.stringify(data.user));
 
-      navigate('/konyvtarrendszer');
+      window.location.href = '/konyvtarrendszer';
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login hiba:", error);
+      alert(error.response?.data?.message || "Hibás dolgozói név vagy jelszó!");
     }
   }
 
-  return <>
+  return (
     <div className="login-container">
       <div className="login-box">
         <h1>Könyvtárrendszer</h1>
         <h3>Bejelentkezés</h3>
 
-        <form>
+        <form onSubmit={handleLogin}>
           <div className="input-group">
             <label>Felhasználó név:</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
             />
           </div>
 
@@ -74,11 +78,12 @@ export const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
-          <button type='button' onClick={() => handleLogin()}>Belépés</button>
+          <button type='submit'>Belépés</button>
         </form>
       </div>
     </div>
-  </>
+  );
 }

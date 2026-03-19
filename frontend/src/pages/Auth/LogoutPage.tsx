@@ -1,22 +1,28 @@
-import axios from 'axios';
+import axios from "axios";
 
 export const Logout = async (redirectPath = '/') => {
-    const token = localStorage.getItem('token');
+    const adminToken = localStorage.getItem('admin_token');
+    const userToken = localStorage.getItem('user_token');
+    const activeToken = adminToken || userToken;
     
     try {
-        if (token) {
+        if (activeToken) {
             await axios.post('http://localhost:8000/api/kilepes', {}, {
                 headers: { 
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${activeToken}`,
                     'Accept': 'application/json'
                 }
             });
         }
     } catch (error) {
-        console.error("Szerver oldali kijelentkezés sikertelen", error);
+        console.error("Szerver oldali kijelentkezés hiba", error);
     } finally {
-        // A kliens oldali takarítás MINDIG lefut
-        localStorage.clear(); // Mindent töröl (token, név, stb.)
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        localStorage.removeItem('user_token');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('active_users');
+
         window.location.href = redirectPath;
     }
 };

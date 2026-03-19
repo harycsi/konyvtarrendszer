@@ -15,13 +15,9 @@ class FoglalasController extends Controller
      */
     public function index()
     {
-        try {
-            return Foglalas::all();
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        $foglalasok = Foglalas::with(['user', 'konyv'])->get();
+        return response()->json($foglalasok);
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -31,7 +27,6 @@ class FoglalasController extends Controller
 
     public function store(Request $request)
     {
-        // Ellenőrizzük, hogy a user be van-e jelentkezve (Sanctum)
         if (!$request->user()) {
             return response()->json(['hiba' => 'Bejelentkezés szükséges!'], 401);
         }
@@ -42,14 +37,21 @@ class FoglalasController extends Controller
             return response()->json(['hiba' => 'Nincs készleten'], 400);
         }
 
+        $lefoglalta = Foglalas::where('user_id', $request->user()->id)
+            ->where('konyv_id', $request->konyv_id)
+            ->exists();
+
+        if ($lefoglalta) {
+            return response()->json(['hiba' => 'Ezt a könyvet már lefoglaltad!'], 409);
+        }
+
         $foglalas = new Foglalas();
         $foglalas->konyv_id = $request->konyv_id;
-        $foglalas->user_id = $request->user()->id; // Itt vesszük ki a tokenből!
+        $foglalas->user_id = $request->user()->id;
         $foglalas->save();
 
         return response()->json(['uzenet' => 'Sikeres foglalás!'], 201);
     }
-
     /**
      * Display the specified resource.
      *
@@ -64,7 +66,7 @@ class FoglalasController extends Controller
     public function foglal(Request $request)
     {
         $userId = $request->user()->id;
-        $adatok = \App\Models\Foglalas::where('user_id', $userId)
+        $adatok = Foglalas::where('user_id', $userId)
             ->with('konyv')
             ->get();
         return response()->json($adatok);
@@ -76,17 +78,9 @@ class FoglalasController extends Controller
      * @param  \App\Models\Foglalas  $foglalas
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Foglalas $user_id)
+    public function update(Request $request, $id)
     {
-        $foglalas = Foglalas::find($user_id);
-        $foglalas->fill($request->all());
-        $foglalas->save();
-        $foglalas->refresh();
-
-        $konyv = Konyv::find($request->konyv_id);
-        $konyv->refresh();
-
-        return response()->json($user_id, 201);
+        //
     }
     /**
      * Remove the specified resource from storage.
@@ -98,7 +92,6 @@ class FoglalasController extends Controller
     {
         $foglalas = Foglalas::findOrFail($id);
         $foglalas->delete();
-
         return response()->json(['message' => 'Foglalás törölve, készlet visszatöltve.'], 200);
     }
 

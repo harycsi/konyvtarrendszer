@@ -1,7 +1,9 @@
 import { useState, createContext, useContext, useEffect } from 'react';
 import '../../App.css';
+import axios from 'axios';
 import { NavLink } from 'react-router-dom';
 import { Logout } from '../Auth/LogoutPage';
+import { Modal } from '../../Modals';
 
 interface Book {
   id: number;
@@ -23,52 +25,52 @@ interface LibraryContextType {
   setBooks: React.Dispatch<React.SetStateAction<Book[]>>;
   selectedBook: Book | null;
   setSelectedBook: React.Dispatch<React.SetStateAction<Book | null>>;
+  foglalasokSzama: number;
+  setFoglalasokSzama: React.Dispatch<React.SetStateAction<number>>;
+  modal: { msg: string | null; type: 'success' | 'error' };
+  notify: (msg: string, type: 'success' | 'error') => void;
 }
 
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
 export const Library = () => {
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("cim");
+  const [sortBy, setSortBy] = useState("szerzo");
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [foglalasokSzama, setFoglalasokSzama] = useState<number>(0);
+  const [modal, setModal] = useState<{ msg: string | null; type: 'success' | 'error' }>({
+    msg: null,
+    type: 'success'
+  });
 
-  const role = localStorage.getItem('role');
-  const token = localStorage.getItem('token');
-
-  if (!token || role === "1") {
-    return (
-      <div className="library-container">
-        <p>Ez az oldal csak regisztrált kölcsönzők számára elérhető!</p>
-        {role === "1" && <NavLink to="/konyvtarrendszer">Ugrás a könyvtáros felületre!</NavLink>}
-      </div>
-    );
-  }
+  const notify = (msg: string, type: 'success' | 'error') => {
+    setModal({ msg, type });
+  };
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const url = searchTerm.length > 2
+    const delayDebounceFn = setTimeout(async () => {
+      const token = localStorage.getItem('user_token');
+      const url = searchTerm.length > 1
         ? `http://localhost:8000/api/konyvtar/keres?query=${searchTerm}&sort=${sortBy}`
-        : `http://localhost:8000/api/konyvtar/konyv-lista?sort=${sortBy}`;
+        : `http://localhost:8000/api/konyvek?sort=${sortBy}`;
 
-      fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`, // Ez kulcsfontosságú!
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
-      })
-        .then(res => {
-          if (res.status === 401) throw new Error("Lejárt a munkamenet!");
-          return res.json();
-        })
-        .then(data => setBooks(data))
-        .catch(err => console.error("Hiba:", err));
-    }, 300); // 300ms várakozás, hogy ne terheljük a szervert minden betűnél
+      try {
+        const res = await axios.get(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        setBooks(res.data);
+      } catch (err: any) {
+        if (err.response?.status === 401) console.error("Lejárt a munkamenet!");
+        console.error("Hiba a könyvek betöltésekor:", err);
+      }
+    }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, sortBy, token, role]); // Újratölt, ha változik a keresőszó
+  }, [searchTerm, sortBy]);
 
   const contextValue: LibraryContextType = {
     books,
@@ -78,7 +80,11 @@ export const Library = () => {
     setSearchTerm,
     setSortBy,
     selectedBook,
-    setSelectedBook
+    setSelectedBook,
+    foglalasokSzama,
+    setFoglalasokSzama,
+    modal,
+    notify
   };
 
   return <>
@@ -90,7 +96,9 @@ export const Library = () => {
           <nav>
             <ul>
               <li><NavLink to="/kolcsonzes">Kölcsönzéseim</NavLink></li>
-              <li><NavLink to="/foglalas">Foglalásaim</NavLink></li>
+              <li><NavLink to="/foglalas" className="nav-with-badge">Foglalásaim{foglalasokSzama > 0 && (
+                <span className="cart-badge">{foglalasokSzama}</span>
+              )}</NavLink></li>
               <li><NavLink to="/profil">Profilom</NavLink></li>
               <li><button type="button" onClick={() => Logout('/belepes')} className="nav-link-button">
                 Kilépés</button></li>
@@ -113,6 +121,11 @@ export const Library = () => {
         <hr />
         <SearchBar />
         <BookList />
+        <Modal
+          msg={modal.msg}
+          type={modal.type}
+          onClose={() => setModal({ ...modal, msg: null })}
+        />
         <footer>Az éves tagság december 31-ig érvényes!</footer>
       </div>
     </LibraryContext.Provider>
@@ -124,8 +137,8 @@ const useLibrary = () => {
 
   if (!context) throw Error("Nincs Provider átadva a komponensnek!");
 
-  const { searchTerm, books, sortBy, setBooks, setSearchTerm, setSortBy, selectedBook, setSelectedBook } = context;
-  return { searchTerm, books, sortBy, setBooks, setSearchTerm, setSortBy, selectedBook, setSelectedBook };
+  const { searchTerm, books, sortBy, setBooks, setSearchTerm, setSortBy, selectedBook, setSelectedBook, foglalasokSzama, setFoglalasokSzama, notify } = context;
+  return { searchTerm, books, sortBy, setBooks, setSearchTerm, setSortBy, selectedBook, setSelectedBook, foglalasokSzama, setFoglalasokSzama, notify };
 }
 
 const SearchBar = () => {
@@ -157,47 +170,37 @@ const SearchBar = () => {
 }
 
 const BookList = () => {
-  const { books, setBooks, selectedBook, setSelectedBook } = useLibrary();
+  const { books, setBooks, selectedBook, setSelectedBook, foglalasokSzama, setFoglalasokSzama, notify } = useLibrary();
 
-  const handleFoglalas = (bookId: number, bookTitle: string) => {
-    const token = localStorage.getItem('token');
+  const handleFoglalas = async (
+    bookId: number,
+    bookTitle: string,) => {
+    const token = localStorage.getItem('user_token');
 
-    fetch(`http://localhost:8000/api/foglal`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      body: JSON.stringify({ konyv_id: bookId })
-    })
-      .then(async res => {
-        if (res.ok) {
-          alert(`Sikeres foglalás: ${bookTitle}`);
-
-          // Frissítésnél is kell a token a fejlécbe!
-          const response = await fetch('http://localhost:8000/api/konyvtar/konyv-lista', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setBooks(data);
+    try {
+      await axios.post(`http://localhost:8000/api/foglal`,
+        { konyv_id: bookId },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
           }
-        } else {
-          const errorData = await res.json();
-          alert(`Hiba: ${errorData.hiba || errorData.message || 'Sikertelen foglalás'}`);
         }
-      })
-      .catch(err => {
-        console.error("Hiba a foglalásnál:", err);
-        alert("Hálózati hiba történt!");
+      );
+
+      notify(`Sikeres foglalás: ${bookTitle}`, 'success');
+
+      setFoglalasokSzama(prev => prev + 1);
+
+      const res = await axios.get('http://localhost:8000/api/konyvek', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
+      setBooks(res.data);
+
+    } catch (err: any) {
+      const hibaUzenet = err.response?.data?.hiba || err.response?.data?.message || "Ezt a könyvet már lefoglaltad!";
+      notify(`${hibaUzenet}`, 'error');
+    }
   };
 
   return (

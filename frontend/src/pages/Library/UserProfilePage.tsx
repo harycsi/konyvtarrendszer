@@ -24,33 +24,23 @@ export const ProfilePage = () => {
         uj_tel: ''
     });
     const [message, setMessage] = useState('');
-    
-    const role = localStorage.getItem('role');
-    const token = localStorage.getItem('token');
 
     useEffect(() => {
-        if (!token || role === "1") return;
-
-        fetch('http://localhost:8000/api/profil', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-            }
-        })
-            .then(res => {
-                if (!res.ok) throw new Error("Sikertelen betöltés");
-                return res.json();
-            })
-            .then(data => {
-                setUser(data);
-                setLoading(false);
-            })
-            .catch(err => {
+        const fetchUser = async () => {
+            const token = localStorage.getItem('user_token');
+            try {
+                const res = await axios.get('http://localhost:8000/api/profil', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setUser(res.data);
+            } catch (err) {
                 console.error("Hiba:", err);
+            } finally {
                 setLoading(false);
-            });
-
-    }, [token, role]);
+            }
+        };
+        fetchUser();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -65,7 +55,8 @@ export const ProfilePage = () => {
             return;
         }
 
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('user_token');
+
         try {
             const res = await axios.post('http://localhost:8000/api/profil/modositas', formData, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -104,7 +95,7 @@ export const ProfilePage = () => {
                     <p><strong>Felhasználó név:</strong> <span>{user.user_nev}</span></p>
                     <p><strong>Email cím:</strong> <span>{user.email_cim}</span></p>
                     <p><strong>Lakcím:</strong> <span>
-                        {user.lakcim.replace(/\.(?!\s|$)/g, ". ")}
+                        {user.lakcim.replace(/\.(?!\s|$)/g, ". ") || "Nincs megadva"}
                     </span></p>
                     <p><strong>Telefonszám:</strong> <span>{user.telefonszam}</span></p>
                 </div>

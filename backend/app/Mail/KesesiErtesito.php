@@ -34,7 +34,7 @@ class KesesiErtesito extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Kesesi Ertesito',
+            subject: 'Értesítés: Lejárt a kölcsönzési határidő',
         );
     }
 
@@ -44,7 +44,7 @@ class KesesiErtesito extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.keses',
         );
     }
 

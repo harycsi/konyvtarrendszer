@@ -21,9 +21,9 @@ class CreateKonyvsTable extends Migration
             $table->unique(['cim', 'szerzo']);
             $table->year('kiadas_eve');
             $table->integer('oldalak');
-            $table->integer('db_szam');
+            $table->unsignedInteger('db_szam')->default(0); ;
             $table->string('kep');
-            $table->integer('osszdb_szam');
+            $table->unsignedInteger('osszdb_szam')->default(0); ;
             $table->text('leiras')->nullable();
             $table->timestamps();
         });

@@ -27,7 +27,6 @@ class UserController extends Controller
             ], 401);
         }
 
-        //Token generálása (React-nek)
         $token = $user->createToken('userToken')->plainTextToken;
 
         return response()->json([
@@ -76,7 +75,6 @@ class UserController extends Controller
         $user->lakcim = $request->lakcim;
         $user->telefonszam = $request->telefonszam;
 
-        //Titkosítjuk a jelszót, mielőtt elmentjük!
         $user->jelszo = Hash::make($request->jelszo);
 
         $user->save();

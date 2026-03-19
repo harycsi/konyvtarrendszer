@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import '../../App.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Modal } from '../../Modals';
 
 export const UserLogin = () => {
   const navigate = useNavigate();
@@ -9,190 +11,166 @@ export const UserLogin = () => {
 
   const loginUser = async () => {
     try {
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift();
-      };
-
-      const xsrfToken = getCookie("XSRF-TOKEN");
-
-      // 3️⃣ Bejelentkezés X-XSRF-TOKEN headerrel
-      const response = await fetch("http://localhost:8000/api/user-belepes", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-XSRF-TOKEN": decodeURIComponent(xsrfToken as string)
-        },
-        body: JSON.stringify({
+      const response = await axios.post("http://localhost:8000/api/user-belepes",
+        {
           user_nev: username,
           jelszo: password
-        })
-      });
+        },
+        { withCredentials: true }
+      );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        console.error("Hiba:", data);
-        return;
+      // --- TÖBB FIÓK KEZELÉSE ---
+      const users = JSON.parse(localStorage.getItem('active_users') || '[]');
+
+      const userData = {
+        id: data.user.id,
+        name: data.user.user_nev,
+        token: data.token,
+        type: 'user'
+      };
+
+      const index = users.findIndex((u: any) => u.id === data.user.id && u.type === 'user');
+      if (index === -1) {
+        users.push(userData);
+      } else {
+        users[index] = userData;
       }
 
       console.log("Sikeres bejelentkezés:", data);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem('active_users', JSON.stringify(users));
+      localStorage.setItem('current_user_id', data.user.id);
+      localStorage.setItem("user_token", data.token);
+      localStorage.setItem("user_data", JSON.stringify(data.user));
 
       navigate('/konyvtar');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login hiba:", error);
+      alert(error.response?.data?.message || "Hibás felhasználónév vagy jelszó!");
     }
   }
 
-  return <>
+  return (
     <div className="login-container">
       <div className="login-box">
         <h1>Könyvtár</h1>
         <h3>Bejelentkezés</h3>
-
-        <form>
+        <form onSubmit={(e) => { e.preventDefault(); loginUser(); }}>
           <div className="input-group">
             <label>Felhasználó név:</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
             />
           </div>
-
           <div className="input-group">
             <label>Jelszó:</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
-          <button type='button' onClick={() => loginUser()}>Belépés</button>
+          <button type='submit'>Belépés</button>
           <div className="form-footer">
             <a href="/regisztracio" className="register-link">Regisztráció</a>
           </div>
         </form>
       </div>
     </div>
-  </>
+  );
 }
 
 export const UserRegister = () => {
-
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
+  const [formData, setFormData] = useState({
+    nev: '',
+    user_nev: '',
+    jelszo: '',
+    email_cim: '',
+    lakcim: '',
+    telefonszam: ''
+  });
+  const [modal, setModal] = useState<{ msg: string | null; type: 'success' | 'error' }>({
+    msg: null,
+    type: 'success'
+  });
 
-  const handleSubmit = async () => {
+  const notify = (msg: string, type: 'success' | 'error') => {
+    setModal({ msg, type });
+  };
 
-    const regData = {
-      nev: name,
-      felhasznalonev: username,
-      jelszo: password,
-      email: email,
-      lakcim: address,
-      telefon: phone
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:8000/api/regisztral', {
-        method: 'POST',
-        credentials: "include",
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(regData)
+      const response = await axios.post('http://localhost:8000/api/regisztral', formData, {
+        withCredentials: true
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Sikeres regisztráció!");
-        navigate('/belepes');
-      } else {
-        alert("Hiba: " + (data.message || "Hiba történt a regisztráció során."));
+      if (response.status === 200 || response.status === 201) {
+        notify("Sikeres regisztráció!", 'success');
       }
-    } catch (err) {
-      console.error("Hálózati hiba:", err);
+    } catch (err: any) {
+      console.error("Regisztrációs hiba:", err);
+      const hibaUzenet = err.response?.data?.message || "Hiba történt a regisztráció során.";
+      notify(hibaUzenet, 'error');
     }
   };
 
-  return <>
+  return (
     <div className="login-container">
       <div className="login-box">
         <h1>Könyvtár</h1>
         <h3>Regisztráció</h3>
-
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label>Teljes név:</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <input type="text" name="nev" value={formData.nev} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
             <label>Felhasználó név:</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <input type="text" name="user_nev" value={formData.user_nev} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
             <label>Jelszó:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <input type="password" name="jelszo" value={formData.jelszo} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
             <label>Email cím:</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input type="email" name="email_cim" value={formData.email_cim} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
             <label>Lakcím:</label>
-            <input
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
+            <input type="text" name="lakcim" value={formData.lakcim} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
             <label>Telefonszám:</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
+            <input type="tel" name="telefonszam" value={formData.telefonszam} onChange={handleChange} required />
           </div>
-          <button type="button" onClick={handleSubmit}>Küldés</button>
+          <button type="submit">Küldés</button>
+          <Modal
+            msg={modal.msg}
+            type={modal.type}
+            onClose={() => {
+              setModal({ ...modal, msg: null });
+              if (modal.type === 'success') {
+                navigate('/belepes');
+              }
+            }}
+          />
         </form>
       </div>
     </div>
-  </>
+  );
 }

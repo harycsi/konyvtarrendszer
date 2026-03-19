@@ -141,22 +141,41 @@ nav a.active {
 
 .nav-link-button {
   background: none;
-  /* Háttér eltüntetése */
   border: none;
-  /* Keret eltüntetése */
   padding: 0;
-  /* Belső margó nullázása */
   color: #bdc3c7;
-  /* Olyan kék legyen, mint a többi link (írd át a sajátodra!) */
   text-decoration: none;
-  /* Aláhúzás levétele */
   font-size: inherit;
-  /* Betűméret öröklése a szülőtől */
   font-family: inherit;
-  /* Betűtípus öröklése */
   cursor: pointer;
-  /* Mutassa az ujjat rámutatáskor */
 }
+
+.nav-with-badge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding-right: 10px;
+}
+
+.cart-badge {
+    background: linear-gradient(45deg, #3498db, #2c3e50);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -10px;
+    right: -16px;
+    box-shadow: 0 2px 8px rgba(14, 1, 70, 0.5);
+    border: 2px solid white;
+}
+
 
 input {
   padding: 10px;
@@ -173,7 +192,6 @@ hr {
   margin: 30px 0;
 }
 
-/* Könyvek rácsa (BookList-hez) */
 .book-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -181,7 +199,6 @@ hr {
   margin-top: 20px;
 }
 
-/* Egy darab könyv kártyája */
 .book-card {
   background: white;
   border-radius: 10px;
@@ -193,7 +210,7 @@ hr {
 }
 
 .book-card:hover {
-  transform: translateY(-5px); /* Megemelkedik hoverre */
+  transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -211,48 +228,36 @@ hr {
 
 .konyvtar-ujdonsagok {
   display: flex;
-  /* Egymás mellé teszi az elemeket */
   gap: 20px;
-  /* Távolság a könyvek között */
   align-items: end;
-  /* Ha eltérő a magasságuk, az aljukat igazítja egy vonalba */
   flex-wrap: wrap;
-  /* Mobilnézetben, ha nem férnek el, egymás alá törnek */
 }
 
 .konyvtar-ujdonsagok img {
-  /* Itt állítsd be a kívánt fix méretet */
   width: 160px;
   height: 240px;
   object-fit: cover;
-  /* Kitölti a keretet torzítás nélkül */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  /* Árnyék a mélységért */
   transition: transform 0.2s;
-  /* Animáció a kurzorhoz */
 }
 
 .konyv-link {
   text-decoration: none;
-  /* Eltünteti a link aláhúzását */
 }
 
 .konyvtar-ujdonsagok img:hover {
   transform: scale(1.05);
-  /* Kicsit megnő, ha rávisszük az egeret */
 }
 
-/* Táblázat konténer */
 .konyvtar-lista-container,
 .foglalas-lista-container,
 .users-container,
 .kolcsonzes-lista-container {
   margin: 20px 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: auto; /* Mobilon görgethetővé teszi, ha túl széles */
+  overflow-x: auto;
 }
 
-/* Alap táblázat stílus */
 .konyv-tablazat,
 .foglalas-tablazat,
 .users-tablazat,
@@ -274,7 +279,6 @@ hr {
   overflow: hidden;
 }
 
-/* Fejléc stílus */
 .konyv-tablazat thead,
 .foglalas-tablazat thead,
 .users-tablazat thead,
@@ -315,8 +319,6 @@ hr {
   vertical-align: middle;
 }
 
-
-/* Sorok váltakozó színezése */
 .konyv-tablazat tbody tr:nth-of-type(even) {
   background-color: #f9f9f9;
 }
@@ -333,7 +335,6 @@ hr {
   background-color: #f9f9f9;
 }
 
-/* Sor kiemelése egérrel */
 .konyv-tablazat tbody tr:hover {
   background-color: #f1f4f9;
   transition: 0.3s;
@@ -354,7 +355,6 @@ hr {
   transition: 0.3s;
 }
 
-/* Gomb stílus a táblázatban */
 .konyv-tablazat button,
 .foglalas-tablazat button,
 .kolcsonzes-tablazat button {
@@ -411,7 +411,6 @@ hr {
   background-color: #e5e7eb;
 }
 
-/* Az aktív gomb stílusa */
 .sort-button-group button.active {
   background-color: #ffffff;
   color: #2563eb;
@@ -439,8 +438,8 @@ hr {
   width: 90%;
   position: relative;
   color: #333;
-  max-height: 85vh; /* A képernyő magasságának max 85%-a lehet */
-  overflow-y: auto; /* Ha hosszabb a tartalom, megjelenik a belső görgetősáv */
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .description {
@@ -456,11 +455,12 @@ hr {
   background: none;
   font-size: 24px;
   cursor: pointer;
+  color: #666;
+  padding: 5px;
 }
 
-/* Késedelmes sorok kiemelése */
 .overdue-row {
-  background-color: #fff5f5; /* Nagyon halvány piros háttér */
+  background-color: #fff5f5;
 }
 
 .overdue-date {
@@ -475,7 +475,7 @@ hr {
   padding: 20px;
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 6px 6px rgba(0, 0, 0, 0.10);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -508,7 +508,6 @@ hr {
   min-width: 140px; 
 }
 
-/* Értékek stílusa */
 .user-profile span {
   color: #212529;
   text-align: right;
@@ -520,7 +519,7 @@ hr {
   padding: 20px;
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 6px 6px rgba(0, 0, 0, 0.10);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
