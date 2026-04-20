@@ -74,7 +74,7 @@ class KolcsonzesController extends Controller
     public function kolcson(Request $request)
     {
         $userId = $request->user()->id;
-        $adatok = \App\Models\Kolcsonzes::where('user_id', $userId)
+        $adatok = Kolcsonzes::where('user_id', $userId)
             ->with('konyv')
             ->get();
         return response()->json($adatok);

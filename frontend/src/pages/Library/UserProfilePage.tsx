@@ -3,6 +3,7 @@ import '../../App.css';
 import { NavLink } from 'react-router-dom';
 import { Logout } from '../Auth/LogoutPage';
 import axios from 'axios';
+import { Modal } from '../../Modals';
 
 interface User {
     id: number;
@@ -23,7 +24,15 @@ export const ProfilePage = () => {
         uj_cim: '',
         uj_tel: ''
     });
-    const [message, setMessage] = useState('');
+
+    const [modal, setModal] = useState<{ msg: string | null; type: 'success' | 'error' }>({
+        msg: null,
+        type: 'success'
+    });
+
+    const notify = (msg: string, type: 'success' | 'error') => {
+        setModal({ msg, type });
+    };
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -51,7 +60,7 @@ export const ProfilePage = () => {
 
         const hasData = Object.values(formData).some(val => val.trim() !== '');
         if (!hasData) {
-            setMessage("Kérjük, töltsön ki legalább egy módosítandó mezőt!");
+            notify("Kérjük, töltsön ki legalább egy módosítandó mezőt!", "error");
             return;
         }
 
@@ -61,10 +70,10 @@ export const ProfilePage = () => {
             const res = await axios.post('http://localhost:8000/api/profil/modositas', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setMessage(res.data.uzenet || "Kérelem sikeresen elküldve az adminnak!");
+            notify(res.data.uzenet || "Kérelem sikeresen elküldve az adminnak!", "success");
             setFormData({ uj_nev: '', uj_email: '', uj_cim: '', uj_tel: '' });
         } catch (err: any) {
-            setMessage(err.response?.data?.message || "Hiba történt a beküldéskor.");
+            notify(err.response?.data?.message || "Hiba történt a beküldéskor.", "error");
         }
     };
 
@@ -73,6 +82,13 @@ export const ProfilePage = () => {
 
     return (
         <div className="library-container">
+            {modal.msg && (
+                <Modal
+                    msg={modal.msg}
+                    type={modal.type}
+                    onClose={() => setModal({ msg: null, type: 'success' })}
+                />
+            )}
             <header>
                 <div className="logo">Könyvtár</div>
                 <h4>Üdvözlünk könyvtárunkban, {user.nev}!</h4>
@@ -104,7 +120,6 @@ export const ProfilePage = () => {
 
             <div className="edit-section">
                 <h3>Adatok módosításának kérése</h3>
-                {message && <div className="alert-box">{message}</div>}
                 <form onSubmit={handleModositasKeres} className="modositas-form">
                     <input type="text" name="uj_nev" placeholder="Új név" value={formData.uj_nev} onChange={handleInputChange} />
                     <input type="email" name="uj_email" placeholder="Új email" value={formData.uj_email} onChange={handleInputChange} />

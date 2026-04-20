@@ -66,6 +66,8 @@ class UserController extends Controller
             'jelszo' => 'required|min:6',
             'lakcim' => 'nullable|string',
             'telefonszam' => 'nullable|string|max:20',
+        ], [
+            'user_nev.unique' => 'Ez a felhasználónév már foglalt!',
         ]);
 
         $user = new User();

@@ -2,21 +2,31 @@ import { useState } from 'react';
 import '../../App.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Modal } from '../../Modals';
 
 export const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState("");
 
+  const [modal, setModal] = useState<{ msg: string | null; type: 'success' | 'error' }>({
+    msg: null,
+    type: 'success'
+  });
+
+  const notify = (msg: string, type: 'success' | 'error') => {
+    setModal({ msg, type });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
-    if(e) e.preventDefault();
+    if (e) e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:8000/api/belepes", 
+      const response = await axios.post("http://localhost:8000/api/belepes",
         {
           user_nev: username,
           jelszo: password
-        }, 
+        },
         { withCredentials: true }
       );
 
@@ -24,16 +34,16 @@ export const Login = () => {
 
       // --- TÖBB FIÓK KEZELÉSE ---
       const users = JSON.parse(localStorage.getItem('active_users') || '[]');
-      
-      const userData = { 
-        id: data.user.id, 
-        name: data.user.user_nev, 
+
+      const userData = {
+        id: data.user.id,
+        name: data.user.user_nev,
         token: data.token,
         type: 'admin'
       };
 
       const index = users.findIndex((u: any) => u.id === data.user.id && u.type === 'admin');
-      
+
       if (index === -1) {
         users.push(userData);
       } else {
@@ -47,11 +57,12 @@ export const Login = () => {
       localStorage.setItem("admin_token", data.token);
       localStorage.setItem("admin_user", JSON.stringify(data.user));
 
-      window.location.href = '/konyvtarrendszer';
+      navigate('/konyvtarrendszer');
 
-    } catch (error: any) {
-      console.error("Login hiba:", error);
-      alert(error.response?.data?.message || "Hibás dolgozói név vagy jelszó!");
+    } catch (err: any) {
+      console.error("Login hiba:", err);
+      const hibaUzenet = err.response?.data?.message || "Hibás felhasználó név vagy jelszó!";
+      notify(hibaUzenet, 'error');
     }
   }
 
@@ -82,6 +93,13 @@ export const Login = () => {
             />
           </div>
           <button type='submit'>Belépés</button>
+          <Modal
+            msg={modal.msg}
+            type={modal.type}
+            onClose={() =>
+              setModal({ ...modal, msg: null })
+            }
+          />
         </form>
       </div>
     </div>

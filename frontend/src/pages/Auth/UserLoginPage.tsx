@@ -9,6 +9,15 @@ export const UserLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState("");
 
+  const [modal, setModal] = useState<{ msg: string | null; type: 'success' | 'error' }>({
+    msg: null,
+    type: 'success'
+  });
+
+  const notify = (msg: string, type: 'success' | 'error') => {
+    setModal({ msg, type });
+  };
+
   const loginUser = async () => {
     try {
       const response = await axios.post("http://localhost:8000/api/user-belepes",
@@ -49,7 +58,8 @@ export const UserLogin = () => {
 
     } catch (error: any) {
       console.error("Login hiba:", error);
-      alert(error.response?.data?.message || "Hibás felhasználónév vagy jelszó!");
+      const hibaUzenet = error.response?.data?.message || "Hibás felhasználónév vagy jelszó!";
+      notify(hibaUzenet, 'error');
     }
   }
 
@@ -81,6 +91,13 @@ export const UserLogin = () => {
           <div className="form-footer">
             <a href="/regisztracio" className="register-link">Regisztráció</a>
           </div>
+          <Modal
+            msg={modal.msg}
+            type={modal.type}
+            onClose={() =>
+              setModal({ ...modal, msg: null })
+            }
+          />
         </form>
       </div>
     </div>
@@ -107,7 +124,20 @@ export const UserRegister = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === 'nev') {
+      const betuk = value.replace(/[0-9]/g, '');
+      setFormData({ ...formData, [name]: betuk });
+      return;
+    }
+
+
+    if (name === 'telefonszam') {
+      const szamok = value.replace(/[^0-9+]/g, '');
+      setFormData({ ...formData, [name]: szamok });
+      return;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,9 +152,18 @@ export const UserRegister = () => {
         notify("Sikeres regisztráció!", 'success');
       }
     } catch (err: any) {
-      console.error("Regisztrációs hiba:", err);
-      const hibaUzenet = err.response?.data?.message || "Hiba történt a regisztráció során.";
-      notify(hibaUzenet, 'error');
+      
+      if (err.response && err.response.status === 422) {
+        const validationErrors = err.response.data.errors;
+        if (validationErrors.user_nev) {
+          notify(`Hiba: ${validationErrors.user_nev[0]}`, 'error');
+        } else {
+          notify("Hibás adatok a regisztrációhoz.", 'error');
+        }
+      } else {
+        const hibaUzenet = err.response?.data?.message || "Hiba történt a regisztráció során.";
+        notify(hibaUzenet, 'error');
+      }
     }
   };
 

@@ -151,29 +151,29 @@ nav a.active {
 }
 
 .nav-with-badge {
-    position: relative;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    padding-right: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding-right: 10px;
 }
 
 .cart-badge {
-    background: linear-gradient(45deg, #3498db, #2c3e50);
-    color: white;
-    font-size: 11px;
-    font-weight: bold;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: -10px;
-    right: -16px;
-    box-shadow: 0 2px 8px rgba(14, 1, 70, 0.5);
-    border: 2px solid white;
+  background: linear-gradient(45deg, #3498db, #2c3e50);
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -10px;
+  right: -16px;
+  box-shadow: 0 2px 8px rgba(14, 1, 70, 0.5);
+  border: 2px solid white;
 }
 
 
@@ -379,10 +379,9 @@ hr {
   font-size: 0.85rem;
 }
 
-/* Szürke, ha nem elérhető */
 .kolcsonzes-gomb:disabled,
 .foglalas-gomb:disabled {
-  background-color: #bdc3c7; 
+  background-color: #bdc3c7;
   cursor: not-allowed;
 }
 
@@ -464,8 +463,8 @@ hr {
 }
 
 .overdue-date {
-    color: #d9534f;
-    font-weight: bold;
+  color: #d9534f;
+  font-weight: bold;
 }
 
 .profile-grid,
@@ -505,7 +504,7 @@ hr {
   color: #555;
   font-weight: 600;
   margin-right: 10px;
-  min-width: 140px; 
+  min-width: 140px;
 }
 
 .user-profile span {
@@ -524,24 +523,108 @@ hr {
 }
 
 .modositas-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 350px;
-}
-.modositas-form input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-.alert-box {
-    background: #e7f3fe;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    color: #31708f;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
 }
 
-.modositas-form button {    
+.modositas-form input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modositas-form button {
   align-self: center;
+}
+
+@media (max-width: 600px) {
+
+  header {
+    flex-direction: column;
+    padding: 20px;
+    text-align: center;
+    gap: 15px;
+  }
+
+  nav ul {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .nav-with-badge {
+    padding-right: 0;
+  }
+
+  input {
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    box-sizing: border-box;
+  }
+
+  .konyvtar-ujdonsagok {
+    justify-content: center;
+  }
+
+  .konyv-tablazat th,
+  .konyv-tablazat td,
+  .kolcsonzes-tablazat th,
+  .kolcsonzes-tablazat td,
+  .foglalas-tablazat th,
+  .foglalas-tablazat td {
+    padding: 5px 4px;
+    font-size: 11px;
+  }
+
+  .konyv-tablazat th:nth-child(4),
+  .konyv-tablazat td:nth-child(4) {
+    display: none;
+  }
+
+  .konyv-tablazat th:nth-child(5),
+  .konyv-tablazat td:nth-child(5) {
+    display: none;
+  }
+
+  .kolcsonzes-tablazat th:nth-child(6),
+  .kolcsonzes-tablazat td:nth-child(6) {
+    display: none;
+  }
+
+  .kolcsonzes-tablazat th:nth-child(7),
+  .kolcsonzes-tablazat td:nth-child(7) {
+    display: none;
+  }
+
+  .kolcsonzes-tablazat th:nth-child(8),
+  .kolcsonzes-tablazat td:nth-child(8) {
+    display: none;
+  }
+
+  .foglalas-tablazat th:nth-child(4),
+  .foglalas-tablazat td:nth-child(4) {
+    display: none;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .konyv-tablazat button,
+  .foglalas-gomb,
+  .kolcsonzes-gomb {
+    padding: 10px 15px;
+    width: 100%;
+  }
+
+  .sort-button-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 }
